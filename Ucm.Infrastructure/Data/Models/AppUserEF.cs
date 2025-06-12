@@ -12,25 +12,8 @@ namespace Ucm.Infrastructure.Data.Models
     {
         public string FullName { get; set; }
 
-        public User ToDomain()
-        {
-            return new User
-            {
-                Id = this.Id,
-                Email = this.Email,
-                FullName = this.FullName
-            };
-        }
-
-        public static AppUserEF FromDomain(User user)
-        {
-            return new AppUserEF
-            {
-                Id = user.Id,
-                Email = user.Email,
-                UserName = user.Email,
-                FullName = user.FullName
-            };
-        }
+        public ICollection<UserEnrollmentEf> Enrollments { get; set; }
+        public ICollection<StudyPlanEf> StudyPlans { get; set; }
     }
 }
+
