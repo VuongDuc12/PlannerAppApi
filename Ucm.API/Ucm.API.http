@@ -1,0 +1,6 @@
+@Ucm.API_HostAddress = http://localhost:5210
+
+GET {{Ucm.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
