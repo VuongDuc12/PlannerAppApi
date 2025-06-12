@@ -37,8 +37,8 @@ Dự án tận dụng các công nghệ và thư viện hiện đại để đ�
 
 ### 1. Clone repository:
 ```bash
-git clone https://github.com/your-username/ucm-backend.git
-cd ucm-backend
+https://github.com/VuongDuc12/BaseProject_NetApi
+cd BaseProject_NetApi
 ```
 
 ### 2. Cấu hình `appsettings.Development.json`:
