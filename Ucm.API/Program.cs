@@ -9,12 +9,12 @@ using Ucm.Application;
 using Ucm.Infrastructure;
 using Ucm.Infrastructure.Data;
 using Ucm.Infrastructure.Data.Models;
+using Ucm.Infrastructure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ----------------------- Add Services -----------------------
 
-// 🧩 Clean Architecture: Add Application & Infrastructure
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -52,6 +52,9 @@ builder.Services.AddAuthentication(options =>
 // 📜 Authorization
 builder.Services.AddAuthorization();
 
+// ✅ Bổ sung dòng này để chạy được controller
+builder.Services.AddControllers();
+
 // 🌐 Swagger + JWT Support
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -87,8 +90,12 @@ builder.Services.AddSwaggerGen(c =>
 // ----------------------- Build & Configure -----------------------
 
 var app = builder.Build();
-
-// 🔧 Middleware pipeline
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await IdentitySeeder.SeedRolesAsync(services);
+    await IdentitySeeder.SeedAdminAsync(services); // optional
+}
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -101,9 +108,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication(); // ⚠️ JWT must come before Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapControllers(); // ✅ Mapping controller routes
 
 app.Run();

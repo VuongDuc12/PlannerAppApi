@@ -4,19 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ucm.Infrastructure.Data.Models
+namespace Ucm.Domain.Entities
 {
-    public class UserEnrollmentEf
+    public class UserEnrollment
     {
-        public int Id { get; set; } // EnrollmentId
-
+        public int Id { get; set; }
         public Guid UserId { get; set; }
-        public AppUserEF User { get; set; }
-
         public int CourseId { get; set; }
-        public CourseEf Course { get; set; }
-
         public DateTime EnrollmentDate { get; set; }
+
+        public AppUser User { get; set; }
+        public Course Course { get; set; }
     }
 
 }

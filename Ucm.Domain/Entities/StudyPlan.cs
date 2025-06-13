@@ -4,20 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ucm.Infrastructure.Data.Models
+namespace Ucm.Domain.Entities
 {
-    public class StudyPlanEf
+    public class StudyPlan
     {
-        public int Id { get; set; } // PlanId
-
+        public int Id { get; set; }
         public Guid UserId { get; set; }
-        public AppUserEF User { get; set; }
-
         public string PlanName { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
-        public ICollection<StudyTaskEf> Tasks { get; set; }
+        public AppUser User { get; set; }
+        public ICollection<StudyTask> Tasks { get; set; }
     }
 
 }

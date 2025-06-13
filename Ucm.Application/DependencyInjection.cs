@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Ucm.Application.IServices;
+using Ucm.Application.Services;
 namespace Ucm.Application
 {
     public static class DependencyInjection
@@ -14,6 +16,8 @@ namespace Ucm.Application
         {
             // Đăng ký các dịch vụ Application Layer ở đây
             // services.AddScoped<IMatchService, MatchService>();
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ITokenService, TokenService>();
 
             return services;
         }
