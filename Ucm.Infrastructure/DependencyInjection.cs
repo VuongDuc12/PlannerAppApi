@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Ucm.Domain.IRepositories;
 using Ucm.Infrastructure.Data;
+using Ucm.Infrastructure.Repositories;
 
 namespace Ucm.Infrastructure
 {
@@ -20,6 +22,7 @@ namespace Ucm.Infrastructure
 
             // Đăng ký các Repository Implementation nếu có
             // services.AddScoped<IPlayerRepository, PlayerRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
 
             return services;
         }

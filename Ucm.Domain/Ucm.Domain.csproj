@@ -7,9 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Enums\" />
     <Folder Include="Factories\" />
     <Folder Include="Strategies\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ucm.Shared\Ucm.Shared.csproj" />
   </ItemGroup>
 
 </Project>
