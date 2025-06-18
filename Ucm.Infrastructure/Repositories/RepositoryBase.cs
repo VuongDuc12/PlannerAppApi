@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Ucm.Domain.IRepositories;
 using Ucm.Infrastructure.Common.Mappers;
 using Ucm.Infrastructure.Data;
+using Ucm.Shared.Common.Pagination;
 
 namespace HotelApp.Infrastructure.Repositories
 {
@@ -27,7 +28,26 @@ namespace HotelApp.Infrastructure.Repositories
             _dbSet = _context.Set<TEf>();
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
+        public async Task<PagedResult<TEntity>> GetPagedAsync(PaginationParams pagination)
+        {
+            IQueryable<TEf> query = _dbSet;
 
+            // Apply basic search filter (nếu có)
+            if (!string.IsNullOrWhiteSpace(pagination.SearchTerm))
+            {
+                query = ApplySearchFilter(query, pagination.SearchTerm);
+            }
+
+            var pagedEf = await query.ToPagedResultAsync(pagination);
+
+            return new PagedResult<TEntity>
+            {
+                Items = pagedEf.Items.Select(_mapper.ToEntity).ToList(),
+                TotalCount = pagedEf.TotalCount,
+                PageNumber = pagedEf.PageNumber,
+                PageSize = pagedEf.PageSize
+            };
+        }
         public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
             var efList = await _dbSet.ToListAsync();
@@ -72,6 +92,10 @@ namespace HotelApp.Infrastructure.Repositories
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
+        }
+        protected virtual IQueryable<TEf> ApplySearchFilter(IQueryable<TEf> query, string searchTerm)
+        {
+            return query; // Mặc định: không lọc gì cả
         }
     }
 }

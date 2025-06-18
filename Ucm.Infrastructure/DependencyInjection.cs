@@ -7,8 +7,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Ucm.Domain.Entities;
 using Ucm.Domain.IRepositories;
+using Ucm.Infrastructure.Common.Mappers;
 using Ucm.Infrastructure.Data;
+using Ucm.Infrastructure.Data.Models;
 using Ucm.Infrastructure.Repositories;
 
 namespace Ucm.Infrastructure
@@ -23,6 +26,8 @@ namespace Ucm.Infrastructure
             // Đăng ký các Repository Implementation nếu có
             // services.AddScoped<IPlayerRepository, PlayerRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ICourseRepository, CourseRepository>();
+            services.AddScoped<IEntityEfMapper<Course, CourseEf>, CourseEntityEfMapper>();
 
             return services;
         }
