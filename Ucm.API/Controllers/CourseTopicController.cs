@@ -9,7 +9,7 @@ namespace Ucm.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     public class CourseTopicController : ControllerBase
     {
         private readonly CourseTopicService _service;
