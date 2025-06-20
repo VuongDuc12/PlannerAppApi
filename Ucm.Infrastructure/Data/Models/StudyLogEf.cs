@@ -8,12 +8,10 @@ namespace Ucm.Infrastructure.Data.Models
 {
     public class StudyLogEf
     {
-        public int Id { get; set; } // LogId
-
+        public int Id { get; set; }
         public int TaskId { get; set; }
         public StudyTaskEf Task { get; set; }
-
-        public int ActualTimeSpent { get; set; } // phút
+        public int ActualTimeSpent { get; set; }
         public DateTime LogDate { get; set; }
     }
 

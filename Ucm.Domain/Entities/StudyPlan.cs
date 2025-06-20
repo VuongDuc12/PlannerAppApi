@@ -13,7 +13,6 @@ namespace Ucm.Domain.Entities
         public string PlanName { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-
         public AppUser User { get; set; }
         public ICollection<StudyTask> Tasks { get; set; }
     }

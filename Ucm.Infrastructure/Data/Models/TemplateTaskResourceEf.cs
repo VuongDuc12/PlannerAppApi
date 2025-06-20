@@ -6,13 +6,12 @@ using System.Threading.Tasks;
 
 namespace Ucm.Infrastructure.Data.Models
 {
-    public class TaskResourceEf
+    public class TemplateTaskResourceEf
     {
         public int Id { get; set; }
-        public int TaskId { get; set; }
-        public StudyTaskEf Task { get; set; }
+        public int TemplateTaskId { get; set; }
+        public TemplateStudyTaskEf TemplateTask { get; set; }
         public string ResourceType { get; set; }
         public string ResourceURL { get; set; }
     }
-
 }
