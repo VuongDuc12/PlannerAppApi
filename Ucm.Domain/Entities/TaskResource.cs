@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.AccessControl;
+
 using System.Text;
 using System.Threading.Tasks;
+using Ucm.Domain.Enums;
 
 namespace Ucm.Domain.Entities
 {
@@ -13,8 +14,6 @@ namespace Ucm.Domain.Entities
         public int TaskId { get; set; }
         public ResourceType ResourceType { get; set; }
         public string ResourceURL { get; set; }
-
-        public StudyTask Task { get; set; }
     }
 
 }

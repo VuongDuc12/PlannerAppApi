@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System;
 
-namespace Ucm.Domain.Entities
+namespace Ucm.Application.DTOs.StudyPlan
 {
-    public class StudyPlan
+    public class StudyPlanDto
     {
         public int Id { get; set; }
         public Guid UserId { get; set; }
@@ -16,6 +12,6 @@ namespace Ucm.Domain.Entities
         public string Semester { get; set; }
         public string AcademicYear { get; set; }
         public int? WeeklyStudyGoalHours { get; set; }
-        public ICollection<StudyPlanCourse> PlanCourses { get; set; }
+        // You can add more properties or nested DTOs if needed
     }
 }

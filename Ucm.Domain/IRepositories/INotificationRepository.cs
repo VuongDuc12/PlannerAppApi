@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Ucm.Domain.Entities;
 
 namespace Ucm.Domain.IRepositories
 {
-    public interface IUserEnrollment: IRepositoryBase<Entities.UserEnrollment>
+    public interface INotificationRepository : IRepositoryBase<Notification>
     {
+
     }
 }

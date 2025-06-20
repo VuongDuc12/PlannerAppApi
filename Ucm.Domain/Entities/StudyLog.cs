@@ -12,7 +12,5 @@ namespace Ucm.Domain.Entities
         public int TaskId { get; set; }
         public int ActualTimeSpent { get; set; } // minutes
         public DateTime LogDate { get; set; }
-
-        public StudyTask Task { get; set; }
     }
 }
