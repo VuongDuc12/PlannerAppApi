@@ -7,6 +7,9 @@ import DashboardPage from '../pages/admin/DashboardPage';
 import UsersPage from '../pages/admin/UsersPage';
 import LoginPage from '../pages/auth/LoginPage';
 import ProtectedRoute from './ProtectedRoute';
+import SubjectsPage from '../pages/admin/SubjectsPage';
+import TopicsPage from '../pages/admin/TopicsPage';
+import PlanTemplatesPage from '../pages/admin/PlanTemplatesPage';
 
 
 const router = createBrowserRouter([
@@ -26,7 +29,10 @@ const router = createBrowserRouter([
         element: <AdminLayout />,
         children: [
           { index: true, element: <DashboardPage /> },
-          { path: 'users', element: <UsersPage /> }
+          { path: 'users', element: <UsersPage /> },
+          { path: 'subjects', element: <SubjectsPage /> },
+          { path: 'topics', element: <TopicsPage /> },
+          { path: 'plan-templates', element: <PlanTemplatesPage /> },
         ]
       }
     ]

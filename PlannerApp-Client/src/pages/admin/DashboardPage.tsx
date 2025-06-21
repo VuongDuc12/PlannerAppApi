@@ -1,223 +1,126 @@
-import {
-  Box,
-  Typography,
-  Grid,
-  Avatar,
-  LinearProgress,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Paper,
-  Stack,
-  useTheme,
-  Chip,
-} from '@mui/material';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import React from 'react';
+import { FiUsers, FiBookOpen, FiClock, FiTrendingUp, FiUserCheck, FiBarChart, FiArrowUp, FiArrowDown } from 'react-icons/fi';
 
 const stats = [
-  { label: 'Người dùng hoạt động', value: '27/80', color: '#6366f1' },
-  { label: 'Môn học', value: '3,298', color: '#06b6d4' },
-  { label: 'Số lượng sinh viên', value: '2m 34s', color: '#f59e42' },
-  { label: 'Tốc độ phát triển', value: '64%', color: '#10b981' },
-  { label: 'Sinh viên tiềm năng', value: '86%', color: '#f43f5e' },
-  { label: 'Lượt truy cập', value: '+34%', color: '#a855f7' },
+  { label: 'Người dùng hoạt động', value: '27/80', icon: <FiUsers className="h-6 w-6 text-indigo-500" /> },
+  { label: 'Môn học', value: '3,298', icon: <FiBookOpen className="h-6 w-6 text-cyan-500" /> },
+  { label: 'Số lượng sinh viên', value: '1,200', icon: <FiClock className="h-6 w-6 text-amber-500" /> },
+  { label: 'Tốc độ phát triển', value: '64%', icon: <FiTrendingUp className="h-6 w-6 text-emerald-500" /> },
+  { label: 'Sinh viên tiềm năng', value: '86%', icon: <FiUserCheck className="h-6 w-6 text-rose-500" /> },
+  { label: 'Lượt truy cập', value: '+34%', icon: <FiBarChart className="h-6 w-6 text-violet-500" /> },
 ];
 
 const subjects = [
-  { name: 'Lập trình phân tán', percent: 74, img: 'https://randomuser.me/api/portraits/men/32.jpg' },
-  { name: 'Android', percent: 52, img: 'https://randomuser.me/api/portraits/men/33.jpg' },
-  { name: 'Cấu trúc dữ liệu giải thuật', percent: 36, img: 'https://randomuser.me/api/portraits/men/34.jpg' },
+  { name: 'Lập trình phân tán', percent: 74, img: `https://i.pravatar.cc/150?u=a042581f4e29026704d` },
+  { name: 'Android', percent: 52, img: `https://i.pravatar.cc/150?u=a042581f4e29026705d` },
+  { name: 'Cấu trúc dữ liệu giải thuật', percent: 36, img: `https://i.pravatar.cc/150?u=a042581f4e29026706d` },
 ];
 
 const devSubjects = [
-  { name: 'Tư tưởng hồ chí minh', percent: 95, img: 'https://randomuser.me/api/portraits/men/35.jpg' },
-  { name: 'Bóng đá', percent: 92, img: 'https://randomuser.me/api/portraits/men/36.jpg' },
-  { name: 'Chơi game', percent: 89, img: 'https://randomuser.me/api/portraits/men/37.jpg' },
+  { name: 'Tư tưởng hồ chí minh', percent: 95, img: `https://i.pravatar.cc/150?u=a042581f4e29026707d` },
+  { name: 'Bóng đá', percent: 92, img: `https://i.pravatar.cc/150?u=a042581f4e29026708d` },
+  { name: 'Chơi game', percent: 89, img: `https://i.pravatar.cc/150?u=a042581f4e29026709d` },
 ];
 
 const students = [
-  { name: 'Vương Văn H', score: 637, percent: 98, img: 'https://randomuser.me/api/portraits/men/1.jpg', rank: 1, up: true },
-  { name: 'Phan Văn A', score: 637, percent: 88, img: 'https://randomuser.me/api/portraits/men/2.jpg', rank: 2, up: false },
-  { name: 'Nguyễn Thị A', score: 500, percent: 90, img: 'https://randomuser.me/api/portraits/women/3.jpg', rank: 3, up: true },
-  { name: 'Đinh Thị B', score: 480, percent: 85, img: 'https://randomuser.me/api/portraits/women/4.jpg', rank: 4, up: false },
+  { name: 'Vương Văn H', score: 637, percent: 98, img: `https://i.pravatar.cc/150?u=a042581f4e29026701d`, rank: 1, up: true },
+  { name: 'Phan Văn A', score: 637, percent: 88, img: `https://i.pravatar.cc/150?u=a042581f4e29026702d`, rank: 2, up: false },
+  { name: 'Nguyễn Thị A', score: 500, percent: 90, img: `https://i.pravatar.cc/150?u=a042581f4e29026703d`, rank: 3, up: true },
+  { name: 'Đinh Thị B', score: 480, percent: 85, img: `https://i.pravatar.cc/150?u=a042581f4e29026714d`, rank: 4, up: false },
 ];
 
-const DashboardPage = () => {
-  const theme = useTheme();
+// Component Card Thống kê
+const StatCard = ({ item }: { item: typeof stats[0] }) => (
+  <div className="bg-white p-5 rounded-xl shadow-md flex items-center space-x-4 transition-transform transform hover:-translate-y-1">
+    <div className="bg-gray-100 p-3 rounded-full">
+      {item.icon}
+    </div>
+    <div>
+      <p className="text-sm text-gray-500">{item.label}</p>
+      <p className="text-2xl font-bold text-gray-800">{item.value}</p>
+    </div>
+  </div>
+);
 
+// Component Môn học với thanh tiến độ
+const SubjectProgress = ({ subject, color }: { subject: typeof subjects[0], color: string }) => (
+  <div>
+    <div className="flex items-center mb-2">
+      <img src={subject.img} alt={subject.name} className="h-9 w-9 rounded-full mr-3 object-cover"/>
+      <div className="flex-1">
+        <p className="font-medium text-gray-800">{subject.name}</p>
+      </div>
+      <span className={`text-sm font-semibold ${color}`}>{subject.percent}%</span>
+    </div>
+    <div className="w-full bg-gray-200 rounded-full h-2">
+      <div className={`${color.replace('text-', 'bg-')} h-2 rounded-full`} style={{ width: `${subject.percent}%` }}></div>
+    </div>
+  </div>
+);
+
+// Component Danh sách Sinh viên
+const StudentListItem = ({ student }: { student: typeof students[0] }) => (
+  <li className="flex items-center space-x-4 py-3">
+    <span className="text-lg font-bold text-gray-400 w-5 text-center">{student.rank}</span>
+    <img src={student.img} alt={student.name} className="h-10 w-10 rounded-full object-cover"/>
+    <div className="flex-1">
+      <p className="font-semibold text-gray-800">{student.name}</p>
+      <p className="text-sm text-gray-500">{student.score} Điểm - {student.percent}% Tiến độ</p>
+    </div>
+    {student.up ? 
+      <FiArrowUp className="h-5 w-5 text-emerald-500" /> : 
+      <FiArrowDown className="h-5 w-5 text-rose-500" />
+    }
+  </li>
+);
+
+const DashboardPage = () => {
   return (
-    <Box sx={{ p: { xs: 1, md: 3 }, bgcolor: '#18181b', minHeight: '100vh' }}>
-      <Typography variant="h5" fontWeight={700} mb={3} color="#fff">
-        Thống kê
-      </Typography>
-      <Paper elevation={0} sx={{ p: 2, mb: 3, borderRadius: 3, bgcolor: '#23232b', boxShadow: '0 2px 16px #0002' }}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <FormControl size="small" sx={{ minWidth: 160 }}>
-            <InputLabel sx={{ color: '#fff' }}>Khung giờ</InputLabel>
-            <Select label="Khung giờ" defaultValue="all" sx={{ color: '#fff', '.MuiOutlinedInput-notchedOutline': { borderColor: '#333' } }}>
-              <MenuItem value="all">Mọi giờ</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 160 }}>
-            <InputLabel sx={{ color: '#fff' }}>Mọi Người</InputLabel>
-            <Select label="Mọi Người" defaultValue="all" sx={{ color: '#fff', '.MuiOutlinedInput-notchedOutline': { borderColor: '#333' } }}>
-              <MenuItem value="all">Tất cả</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 160 }}>
-            <InputLabel sx={{ color: '#fff' }}>Chủ đề</InputLabel>
-            <Select label="Chủ đề" defaultValue="all" sx={{ color: '#fff', '.MuiOutlinedInput-notchedOutline': { borderColor: '#333' } }}>
-              <MenuItem value="all">Tất Cả</MenuItem>
-            </Select>
-          </FormControl>
-        </Stack>
-      </Paper>
-      <Grid container spacing={2} mb={2}>
-        {stats.map((stat, idx) => (
-          <Grid item xs={12} sm={6} md={4} key={stat.label}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 3,
-                borderRadius: 3,
-                bgcolor: '#23232b',
-                minHeight: 110,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                boxShadow: '0 2px 16px #0002',
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-            >
-              <Box
-                sx={{
-                  position: 'absolute',
-                  right: 16,
-                  top: 16,
-                  width: 36,
-                  height: 36,
-                  borderRadius: '50%',
-                  background: stat.color,
-                  opacity: 0.15,
-                  zIndex: 0,
-                }}
-              />
-              <Typography variant="subtitle2" color="#a1a1aa" mb={0.5} sx={{ zIndex: 1 }}>
-                {stat.label}
-              </Typography>
-              <Typography variant="h5" fontWeight={700} color="#fff" sx={{ zIndex: 1 }}>
-                {stat.value}
-              </Typography>
-            </Paper>
-          </Grid>
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-800">Bảng điều khiển</h1>
+        <p className="mt-1 text-gray-600">Tổng quan dữ liệu và hoạt động gần đây.</p>
+      </div>
+
+      {/* Grid các card thống kê */}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {stats.map((item) => (
+          <StatCard key={item.label} item={item} />
         ))}
-      </Grid>
-      <Grid container spacing={2} mb={2}>
-        <Grid item xs={12} md={6}>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: 3, bgcolor: '#23232b', height: '100%', boxShadow: '0 2px 16px #0002' }}>
-            <Typography variant="subtitle1" fontWeight={700} mb={2} color="#fff">
-              Môn học
-            </Typography>
-            {subjects.map((s) => (
-              <Box key={s.name} mb={2}>
-                <Box display="flex" alignItems="center" mb={0.5}>
-                  <Avatar src={s.img} sx={{ width: 32, height: 32, mr: 1 }} />
-                  <Typography variant="body2" sx={{ flex: 1, color: '#fff' }}>
-                    {s.name}
-                  </Typography>
-                  <Chip label={`${s.percent}%`} size="small" sx={{ bgcolor: '#ff5a5f', color: '#fff', fontWeight: 700 }} />
-                </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={s.percent}
-                  sx={{
-                    height: 8,
-                    borderRadius: 5,
-                    bgcolor: '#3a2c2c',
-                    '& .MuiLinearProgress-bar': { bgcolor: '#ff5a5f' },
-                  }}
-                />
-              </Box>
-            ))}
-          </Paper>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: 3, bgcolor: '#23232b', height: '100%', boxShadow: '0 2px 16px #0002' }}>
-            <Typography variant="subtitle1" fontWeight={700} mb={2} color="#fff">
-              Môn học phát triển
-            </Typography>
-            {devSubjects.map((s) => (
-              <Box key={s.name} mb={2}>
-                <Box display="flex" alignItems="center" mb={0.5}>
-                  <Avatar src={s.img} sx={{ width: 32, height: 32, mr: 1 }} />
-                  <Typography variant="body2" sx={{ flex: 1, color: '#fff' }}>
-                    {s.name}
-                  </Typography>
-                  <Chip label={`${s.percent}%`} size="small" sx={{ bgcolor: '#00c48c', color: '#fff', fontWeight: 700 }} />
-                </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={s.percent}
-                  sx={{
-                    height: 8,
-                    borderRadius: 5,
-                    bgcolor: '#1e2e2a',
-                    '& .MuiLinearProgress-bar': { bgcolor: '#00c48c' },
-                  }}
-                />
-              </Box>
-            ))}
-          </Paper>
-        </Grid>
-      </Grid>
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: 3, bgcolor: '#23232b', boxShadow: '0 2px 16px #0002' }}>
-            <Typography variant="subtitle1" fontWeight={700} mb={2} color="#fff">
-              Sinh viên tiêu biểu
-            </Typography>
-            <List>
-              {students.map((student, idx) => (
-                <ListItem key={student.name} disableGutters sx={{ py: 1 }}>
-                  <ListItemAvatar>
-                    <Avatar src={student.img} />
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      <Typography fontWeight={600} color="#fff">{student.name}</Typography>
-                    }
-                    secondary={
-                      <Typography variant="body2" color="#a1a1aa">
-                        {student.score} Điểm - {student.percent}% Tiến độ
-                      </Typography>
-                    }
-                  />
-                  <Typography
-                    variant="body2"
-                    fontWeight={700}
-                    sx={{ minWidth: 24, textAlign: 'right', mr: 1, color: '#fff' }}
-                  >
-                    {student.rank}
-                  </Typography>
-                  {student.up ? (
-                    <ArrowUpwardIcon sx={{ color: '#00c48c' }} fontSize="small" />
-                  ) : (
-                    <ArrowDownwardIcon sx={{ color: '#ff5a5f' }} fontSize="small" />
-                  )}
-                </ListItem>
+      </div>
+
+      {/* Grid nội dung chính */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        {/* Cột chính (bên trái) */}
+        <div className="lg:col-span-2 space-y-8">
+          <div className="bg-white p-6 rounded-xl shadow-md">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Môn học nổi bật</h3>
+            <div className="space-y-5">
+              {subjects.map(s => <SubjectProgress key={s.name} subject={s} color="text-rose-500"/>)}
+            </div>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-md">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Môn học phát triển</h3>
+             <div className="space-y-5">
+              {devSubjects.map(s => <SubjectProgress key={s.name} subject={s} color="text-emerald-500"/>)}
+            </div>
+          </div>
+        </div>
+
+        {/* Cột phụ (bên phải) */}
+        <div className="lg:col-span-1">
+          <div className="bg-white p-6 rounded-xl shadow-md h-full">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Sinh viên tiêu biểu</h3>
+            <ul className="divide-y divide-gray-200">
+              {students.map((student) => (
+                <StudentListItem key={student.name} student={student} />
               ))}
-            </List>
-          </Paper>
-        </Grid>
-      </Grid>
-    </Box>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
