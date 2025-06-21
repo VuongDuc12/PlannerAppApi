@@ -7,8 +7,12 @@ using Ucm.Domain.Entities;
 
 namespace Ucm.Domain.IRepositories
 {
-    public interface IStudyLogRepository: IRepositoryBase<StudyLog>
+    public interface IStudyLogRepository
     {
-
+        Task<IEnumerable<StudyLog>> GetAllAsync();
+        Task<StudyLog> GetByIdAsync(int id);
+        Task<StudyLog> AddAsync(StudyLog entity);
+        Task UpdateAsync(StudyLog entity);
+        Task DeleteAsync(int id);
     }
 }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ucm.Application.Dtos;
+using Ucm.Application.DTOs;
 using Ucm.Application.IServices;
 using Ucm.Domain.Entities;
 using Ucm.Domain.IRepositories;
@@ -35,7 +36,7 @@ namespace Ucm.Application.Services
             var created = await _repository.AddAsync(entity);
             return MapToDto(created);
         }
-
+        
         public async Task UpdateAsync(StudyTaskDto dto)
         {
             var entity = MapToEntity(dto);
@@ -49,33 +50,33 @@ namespace Ucm.Application.Services
 
         // Mapping helpers
         private StudyTaskDto MapToDto(StudyTask entity) =>
-            new StudyTaskDto
-            {
-                Id = entity.Id,
-                PlanCourseId = entity.PlanCourseId,
-                CourseTopicId = entity.CourseTopicId,
-                TaskName = entity.TaskName,
-                TaskDescription = entity.TaskDescription,
-                EstimatedHours = entity.EstimatedHours,
-                DueDate = entity.DueDate,
-                ScheduledDate = entity.ScheduledDate,
-                Status = entity.Status,
-                CompletionDate = entity.CompletionDate,
-                Logs = entity.Logs?.Select(log => new StudyLogDto
-                {
-                    Id = log.Id,
-                    TaskId = log.TaskId,
-                    ActualTimeSpent = log.ActualTimeSpent,
-                    LogDate = log.LogDate
-                }).ToList(),
-                Resources = entity.Resources?.Select(res => new TaskResourceDto
-                {
-                    Id = res.Id,
-                    TaskId = res.TaskId,
-                    ResourceType = (int)res.ResourceType,
-                    ResourceURL = res.ResourceURL
-                }).ToList()
-            };
+    new StudyTaskDto
+    {
+        Id = entity.Id,
+        PlanCourseId = entity.PlanCourseId,
+        CourseTopicId = entity.CourseTopicId,
+        TaskName = entity.TaskName,
+        TaskDescription = entity.TaskDescription,
+        EstimatedHours = entity.EstimatedHours,
+        DueDate = entity.DueDate,
+        ScheduledDate = entity.ScheduledDate,
+        Status = entity.Status,
+        CompletionDate = entity.CompletionDate,
+        Logs = entity.Logs?.Select(log => new StudyLogDto
+        {
+            Id = log.Id,
+            TaskId = log.TaskId,
+            ActualTimeSpent = log.ActualTimeSpent,
+            LogDate = log.LogDate
+        }).ToList(),
+        Resources = entity.Resources?.Select(res => new TaskResourceDto
+        {
+            Id = res.Id,
+            TaskId = res.TaskId,
+            ResourceType = res.ResourceType, // Fix: Explicitly cast ResourceType to int
+            ResourceURL = res.ResourceURL
+        }).ToList()
+    };
 
         private StudyTask MapToEntity(StudyTaskDto dto) =>
             new StudyTask
@@ -101,7 +102,7 @@ namespace Ucm.Application.Services
                 {
                     Id = res.Id,
                     TaskId = res.TaskId,
-                    ResourceType = (Ucm.Domain.Enums.ResourceType)res.ResourceType,
+                    ResourceType = res.ResourceType, // Fix: Explicitly cast int to ResourceType
                     ResourceURL = res.ResourceURL
                 }).ToList()
             };

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Ucm.Application.DTOs;
 
 namespace Ucm.Application.Dtos
 {
@@ -19,19 +20,6 @@ namespace Ucm.Application.Dtos
         public List<TaskResourceDto> Resources { get; set; }
     }
 
-    public class StudyLogDto
-    {
-        public int Id { get; set; }
-        public int TaskId { get; set; }
-        public int ActualTimeSpent { get; set; }
-        public DateTime LogDate { get; set; }
-    }
 
-    public class TaskResourceDto
-    {
-        public int Id { get; set; }
-        public int TaskId { get; set; }
-        public int ResourceType { get; set; } // Use int or your enum type
-        public string ResourceURL { get; set; }
-    }
+   
 }
