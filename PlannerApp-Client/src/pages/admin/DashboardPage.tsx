@@ -1,123 +1,234 @@
 import React from 'react';
-import { FiUsers, FiBookOpen, FiClock, FiTrendingUp, FiUserCheck, FiBarChart, FiArrowUp, FiArrowDown } from 'react-icons/fi';
+import { FiUsers, FiBookOpen, FiClock, FiTrendingUp, FiUserCheck, FiBarChart, FiArrowUp, FiArrowDown, FiEye, FiDownload, FiCalendar, FiTarget } from 'react-icons/fi';
 
 const stats = [
-  { label: 'Người dùng hoạt động', value: '27/80', icon: <FiUsers className="h-6 w-6 text-indigo-500" /> },
-  { label: 'Môn học', value: '3,298', icon: <FiBookOpen className="h-6 w-6 text-cyan-500" /> },
-  { label: 'Số lượng sinh viên', value: '1,200', icon: <FiClock className="h-6 w-6 text-amber-500" /> },
-  { label: 'Tốc độ phát triển', value: '64%', icon: <FiTrendingUp className="h-6 w-6 text-emerald-500" /> },
-  { label: 'Sinh viên tiềm năng', value: '86%', icon: <FiUserCheck className="h-6 w-6 text-rose-500" /> },
-  { label: 'Lượt truy cập', value: '+34%', icon: <FiBarChart className="h-6 w-6 text-violet-500" /> },
+  { 
+    label: 'Tổng người dùng', 
+    value: '2,847', 
+    change: '+12%',
+    changeType: 'increase',
+    icon: <FiUsers className="h-6 w-6" />,
+    color: 'from-blue-500 to-indigo-600',
+    bgColor: 'bg-blue-50'
+  },
+  { 
+    label: 'Môn học đang hoạt động', 
+    value: '156', 
+    change: '+8%',
+    changeType: 'increase',
+    icon: <FiBookOpen className="h-6 w-6" />,
+    color: 'from-emerald-500 to-teal-600',
+    bgColor: 'bg-emerald-50'
+  },
+  { 
+    label: 'Sinh viên đăng ký', 
+    value: '1,847', 
+    change: '+23%',
+    changeType: 'increase',
+    icon: <FiUserCheck className="h-6 w-6" />,
+    color: 'from-purple-500 to-pink-600',
+    bgColor: 'bg-purple-50'
+  },
+  { 
+    label: 'Tỷ lệ hoàn thành', 
+    value: '89%', 
+    change: '+5%',
+    changeType: 'increase',
+    icon: <FiTarget className="h-6 w-6" />,
+    color: 'from-orange-500 to-red-600',
+    bgColor: 'bg-orange-50'
+  },
 ];
 
-const subjects = [
-  { name: 'Lập trình phân tán', percent: 74, img: `https://i.pravatar.cc/150?u=a042581f4e29026704d` },
-  { name: 'Android', percent: 52, img: `https://i.pravatar.cc/150?u=a042581f4e29026705d` },
-  { name: 'Cấu trúc dữ liệu giải thuật', percent: 36, img: `https://i.pravatar.cc/150?u=a042581f4e29026706d` },
+const recentActivities = [
+  { 
+    user: 'Nguyễn Văn An', 
+    action: 'đã hoàn thành môn học', 
+    subject: 'Lập trình Web',
+    time: '2 phút trước',
+    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026701d'
+  },
+  { 
+    user: 'Trần Thị Bình', 
+    action: 'đã đăng ký môn học mới', 
+    subject: 'Cơ sở dữ liệu',
+    time: '5 phút trước',
+    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026702d'
+  },
+  { 
+    user: 'Lê Văn Cường', 
+    action: 'đã đạt được huy hiệu', 
+    subject: 'Học tập xuất sắc',
+    time: '10 phút trước',
+    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026703d'
+  },
+  { 
+    user: 'Phạm Thị Dung', 
+    action: 'đã hoàn thành bài tập', 
+    subject: 'Lập trình Java',
+    time: '15 phút trước',
+    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d'
+  },
 ];
 
-const devSubjects = [
-  { name: 'Tư tưởng hồ chí minh', percent: 95, img: `https://i.pravatar.cc/150?u=a042581f4e29026707d` },
-  { name: 'Bóng đá', percent: 92, img: `https://i.pravatar.cc/150?u=a042581f4e29026708d` },
-  { name: 'Chơi game', percent: 89, img: `https://i.pravatar.cc/150?u=a042581f4e29026709d` },
+const topSubjects = [
+  { name: 'Lập trình Web', students: 234, completion: 89, color: 'from-blue-500 to-indigo-600' },
+  { name: 'Cơ sở dữ liệu', students: 189, completion: 76, color: 'from-emerald-500 to-teal-600' },
+  { name: 'Lập trình Java', students: 156, completion: 82, color: 'from-purple-500 to-pink-600' },
+  { name: 'Toán rời rạc', students: 134, completion: 68, color: 'from-orange-500 to-red-600' },
 ];
 
-const students = [
-  { name: 'Vương Văn H', score: 637, percent: 98, img: `https://i.pravatar.cc/150?u=a042581f4e29026701d`, rank: 1, up: true },
-  { name: 'Phan Văn A', score: 637, percent: 88, img: `https://i.pravatar.cc/150?u=a042581f4e29026702d`, rank: 2, up: false },
-  { name: 'Nguyễn Thị A', score: 500, percent: 90, img: `https://i.pravatar.cc/150?u=a042581f4e29026703d`, rank: 3, up: true },
-  { name: 'Đinh Thị B', score: 480, percent: 85, img: `https://i.pravatar.cc/150?u=a042581f4e29026714d`, rank: 4, up: false },
+const topStudents = [
+  { name: 'Nguyễn Văn An', score: 98, subjects: 12, avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026701d', rank: 1 },
+  { name: 'Trần Thị Bình', score: 95, subjects: 10, avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026702d', rank: 2 },
+  { name: 'Lê Văn Cường', score: 92, subjects: 11, avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026703d', rank: 3 },
+  { name: 'Phạm Thị Dung', score: 89, subjects: 9, avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', rank: 4 },
 ];
 
-// Component Card Thống kê
-const StatCard = ({ item }: { item: typeof stats[0] }) => (
-  <div className="bg-white p-5 rounded-xl shadow-md flex items-center space-x-4 transition-transform transform hover:-translate-y-1">
-    <div className="bg-gray-100 p-3 rounded-full">
-      {item.icon}
-    </div>
-    <div>
-      <p className="text-sm text-gray-500">{item.label}</p>
-      <p className="text-2xl font-bold text-gray-800">{item.value}</p>
-    </div>
-  </div>
-);
-
-// Component Môn học với thanh tiến độ
-const SubjectProgress = ({ subject, color }: { subject: typeof subjects[0], color: string }) => (
-  <div>
-    <div className="flex items-center mb-2">
-      <img src={subject.img} alt={subject.name} className="h-9 w-9 rounded-full mr-3 object-cover"/>
+// Stat Card Component
+const StatCard = ({ stat }: { stat: typeof stats[0] }) => (
+  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+    <div className="flex items-center justify-between">
       <div className="flex-1">
-        <p className="font-medium text-gray-800">{subject.name}</p>
+        <p className="text-sm font-medium text-gray-600 mb-1">{stat.label}</p>
+        <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+        <div className="flex items-center mt-2">
+          <span className={`text-sm font-medium ${stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'}`}>
+            {stat.change}
+          </span>
+          <span className="text-sm text-gray-500 ml-1">so với tháng trước</span>
+        </div>
       </div>
-      <span className={`text-sm font-semibold ${color}`}>{subject.percent}%</span>
-    </div>
-    <div className="w-full bg-gray-200 rounded-full h-2">
-      <div className={`${color.replace('text-', 'bg-')} h-2 rounded-full`} style={{ width: `${subject.percent}%` }}></div>
+      <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center`}>
+        <div className="text-white">
+          {stat.icon}
+        </div>
+      </div>
     </div>
   </div>
 );
 
-// Component Danh sách Sinh viên
-const StudentListItem = ({ student }: { student: typeof students[0] }) => (
-  <li className="flex items-center space-x-4 py-3">
-    <span className="text-lg font-bold text-gray-400 w-5 text-center">{student.rank}</span>
-    <img src={student.img} alt={student.name} className="h-10 w-10 rounded-full object-cover"/>
-    <div className="flex-1">
-      <p className="font-semibold text-gray-800">{student.name}</p>
-      <p className="text-sm text-gray-500">{student.score} Điểm - {student.percent}% Tiến độ</p>
+// Activity Item Component
+const ActivityItem = ({ activity }: { activity: typeof recentActivities[0] }) => (
+  <div className="flex items-start space-x-3 py-3">
+    <img src={activity.avatar} alt={activity.user} className="w-8 h-8 rounded-full object-cover" />
+    <div className="flex-1 min-w-0">
+      <p className="text-sm text-gray-900">
+        <span className="font-medium">{activity.user}</span> {activity.action}
+        <span className="font-medium text-blue-600"> {activity.subject}</span>
+      </p>
+      <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
     </div>
-    {student.up ? 
-      <FiArrowUp className="h-5 w-5 text-emerald-500" /> : 
-      <FiArrowDown className="h-5 w-5 text-rose-500" />
-    }
-  </li>
+  </div>
+);
+
+// Subject Card Component
+const SubjectCard = ({ subject }: { subject: typeof topSubjects[0] }) => (
+  <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+    <div className="flex items-center justify-between mb-3">
+      <h4 className="font-medium text-gray-900">{subject.name}</h4>
+      <div className={`w-8 h-8 rounded-lg bg-gradient-to-r ${subject.color} flex items-center justify-center`}>
+        <FiBookOpen className="w-4 h-4 text-white" />
+      </div>
+    </div>
+    <div className="space-y-2">
+      <div className="flex justify-between text-sm">
+        <span className="text-gray-600">Sinh viên</span>
+        <span className="font-medium text-gray-900">{subject.students}</span>
+      </div>
+      <div className="flex justify-between text-sm">
+        <span className="text-gray-600">Hoàn thành</span>
+        <span className="font-medium text-gray-900">{subject.completion}%</span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div 
+          className={`h-2 rounded-full bg-gradient-to-r ${subject.color}`} 
+          style={{ width: `${subject.completion}%` }}
+        ></div>
+      </div>
+    </div>
+  </div>
+);
+
+// Student Card Component
+const StudentCard = ({ student }: { student: typeof topStudents[0] }) => (
+  <div className="flex items-center space-x-3 p-3 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+    <div className="relative">
+      <img src={student.avatar} alt={student.name} className="w-10 h-10 rounded-full object-cover" />
+      <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+        <span className="text-xs font-bold text-white">{student.rank}</span>
+      </div>
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="font-medium text-gray-900 truncate">{student.name}</p>
+      <p className="text-sm text-gray-500">{student.subjects} môn học</p>
+    </div>
+    <div className="text-right">
+      <p className="text-lg font-bold text-gray-900">{student.score}%</p>
+      <p className="text-xs text-gray-500">Điểm TB</p>
+    </div>
+  </div>
 );
 
 const DashboardPage = () => {
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-800">Bảng điều khiển</h1>
-        <p className="mt-1 text-gray-600">Tổng quan dữ liệu và hoạt động gần đây.</p>
-      </div>
-
-      {/* Grid các card thống kê */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {stats.map((item) => (
-          <StatCard key={item.label} item={item} />
+    <div className="space-y-6">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat) => (
+          <StatCard key={stat.label} stat={stat} />
         ))}
       </div>
 
-      {/* Grid nội dung chính */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Cột chính (bên trái) */}
-        <div className="lg:col-span-2 space-y-8">
-          <div className="bg-white p-6 rounded-xl shadow-md">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Môn học nổi bật</h3>
-            <div className="space-y-5">
-              {subjects.map(s => <SubjectProgress key={s.name} subject={s} color="text-rose-500"/>)}
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Activities */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Hoạt động gần đây</h3>
+              <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                Xem tất cả
+              </button>
             </div>
-          </div>
-          <div className="bg-white p-6 rounded-xl shadow-md">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Môn học phát triển</h3>
-             <div className="space-y-5">
-              {devSubjects.map(s => <SubjectProgress key={s.name} subject={s} color="text-emerald-500"/>)}
+            <div className="space-y-1">
+              {recentActivities.map((activity, index) => (
+                <ActivityItem key={index} activity={activity} />
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Cột phụ (bên phải) */}
+        {/* Top Students */}
         <div className="lg:col-span-1">
-          <div className="bg-white p-6 rounded-xl shadow-md h-full">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Sinh viên tiêu biểu</h3>
-            <ul className="divide-y divide-gray-200">
-              {students.map((student) => (
-                <StudentListItem key={student.name} student={student} />
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Sinh viên xuất sắc</h3>
+              <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                Xem tất cả
+              </button>
+            </div>
+            <div className="space-y-3">
+              {topStudents.map((student) => (
+                <StudentCard key={student.name} student={student} />
               ))}
-            </ul>
+            </div>
           </div>
+        </div>
+      </div>
+
+      {/* Top Subjects */}
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900">Môn học nổi bật</h3>
+          <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+            Xem tất cả
+          </button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {topSubjects.map((subject) => (
+            <SubjectCard key={subject.name} subject={subject} />
+          ))}
         </div>
       </div>
     </div>
