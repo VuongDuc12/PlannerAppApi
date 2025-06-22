@@ -4,6 +4,7 @@ using Ucm.Application.DTOs.CourseTopic;
 using Ucm.Application.Services;
 using Ucm.Domain.Entities;
 using Ucm.Shared.Common.Pagination;
+using Ucm.Shared.Results;
 
 namespace Ucm.API.Controllers
 {
@@ -21,14 +22,18 @@ namespace Ucm.API.Controllers
 
         [HttpGet("paged")]
         public async Task<IActionResult> GetPaged([FromQuery] PaginationParams pagination)
-            => Ok(await _service.GetPagedAsync(pagination));
+        {
+            var paged = await _service.GetPagedAsync(pagination);
+            return Ok(Result<object>.Ok(paged));
+        }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
             var topic = await _service.GetByIdAsync(id);
-            if (topic == null) return NotFound();
-            return Ok(topic);
+            if (topic == null)
+                return NotFound(Result<CourseTopic>.Fail("Not found"));
+            return Ok(Result<CourseTopic>.Ok(topic));
         }
 
         [HttpPost]
@@ -42,7 +47,7 @@ namespace Ucm.API.Controllers
             };
 
             await _service.AddAsync(topic);
-            return Ok(topic);
+            return Ok(Result<CourseTopic>.Ok(topic, "Created successfully"));
         }
 
         [HttpPut("{id}")]
@@ -56,15 +61,14 @@ namespace Ucm.API.Controllers
             };
 
             await _service.UpdateAsync(topic);
-            return NoContent();
+            return Ok(Result.Ok("Updated successfully"));
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             await _service.DeleteAsync(id);
-            return NoContent();
+            return Ok(Result.Ok("Deleted successfully"));
         }
     }
-
 }

@@ -12,10 +12,7 @@ namespace Ucm.Domain.Entities
         public string CourseName { get; set; }
         public int Credits { get; set; }
         public string Description { get; set; }
-
         public ICollection<CourseTopic> Topics { get; set; }
-        public ICollection<UserEnrollment> Enrollments { get; set; }
-        public ICollection<StudyTask> StudyTasks { get; set; }
     }
 
 }

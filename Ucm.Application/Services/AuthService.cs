@@ -36,7 +36,7 @@ namespace Ucm.Application.Services
                 FullName = request.FullName
             };
 
-            return await _userRepo.CreateAsync(user, request.Password, request.Role);
+            return await _userRepo.CreateAsync(user, request.Password, "User");
         }
 
         // ---------- Đăng nhập ----------

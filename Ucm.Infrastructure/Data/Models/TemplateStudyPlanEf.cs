@@ -6,17 +6,13 @@ using System.Threading.Tasks;
 
 namespace Ucm.Infrastructure.Data.Models
 {
-    public class UserEnrollmentEf
+    public class TemplateStudyPlanEf
     {
-        public int Id { get; set; } // EnrollmentId
-
-        public Guid UserId { get; set; }
-        public AppUserEF User { get; set; }
-
+        public int Id { get; set; }
         public int CourseId { get; set; }
         public CourseEf Course { get; set; }
-
-        public DateTime EnrollmentDate { get; set; }
+        public string TemplateName { get; set; }
+        public string Description { get; set; }
+        public ICollection<TemplateStudyTaskEf> Tasks { get; set; }
     }
-
 }

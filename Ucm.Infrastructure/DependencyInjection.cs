@@ -27,8 +27,15 @@ namespace Ucm.Infrastructure
             // services.AddScoped<IPlayerRepository, PlayerRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ICourseRepository, CourseRepository>();
+            services.AddScoped<IStudyPlanRepository, StudyPlanRepository>();
+            services.AddScoped<IStudyTaskRepository, StudyTaskRepository>();
+            services.AddScoped<IStudyPlanCourseRepository, StudyPlanCourseRepository>();
+
+
+
             services.AddScoped<IEntityEfMapper<Course, CourseEf>, CourseEntityEfMapper>();
 
+            services.AddScoped<IEntityEfMapper<StudyPlan, StudyPlanEf>, StudyPlanEntityEfMapper>();
             return services;
         }
     }

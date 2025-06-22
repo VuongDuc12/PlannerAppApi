@@ -12,8 +12,5 @@ namespace Ucm.Domain.Entities
         public int CourseId { get; set; }
         public string TopicName { get; set; }
         public string Description { get; set; }
-
-        //public Course Course { get; set; }
     }
-
 }

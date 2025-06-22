@@ -12,6 +12,8 @@ namespace Ucm.Infrastructure.Common.Mappers
     {
         public CourseTopic ToEntity(CourseTopicEf ef)
         {
+            if (ef == null) return null;
+
             return new CourseTopic
             {
                 Id = ef.Id,
@@ -23,7 +25,9 @@ namespace Ucm.Infrastructure.Common.Mappers
 
         public CourseTopicEf ToEf(CourseTopic entity)
         {
-            return new CourseTopicEf
+            if (entity == null) return null;
+
+            return new CourseTopicEf    
             {
                 Id = entity.Id,
                 CourseId = entity.CourseId,

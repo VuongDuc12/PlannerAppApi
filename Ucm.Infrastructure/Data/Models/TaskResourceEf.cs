@@ -8,11 +8,9 @@ namespace Ucm.Infrastructure.Data.Models
 {
     public class TaskResourceEf
     {
-        public int Id { get; set; } // ResourceId
-
+        public int Id { get; set; }
         public int TaskId { get; set; }
         public StudyTaskEf Task { get; set; }
-
         public string ResourceType { get; set; }
         public string ResourceURL { get; set; }
     }

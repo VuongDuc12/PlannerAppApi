@@ -18,6 +18,9 @@ namespace Ucm.Application
             // services.AddScoped<IMatchService, MatchService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IStudyPlanService, StudyPlanService>();
+            services.AddScoped<IStudyPlanCourseService, StudyPlanCourseService>();
+
             services.AddScoped<CourseService>();
             return services;
         }
