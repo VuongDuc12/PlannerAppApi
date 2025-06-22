@@ -5,9 +5,9 @@ import HomePage from '../pages/client/HomePage';
 import AdminLayout from '../layouts/AdminLayout';
 import DashboardPage from '../pages/admin/DashboardPage';
 import UsersPage from '../pages/admin/UsersPage';
+import SubjectsPage from '../pages/admin/CoursesPage';
 import LoginPage from '../pages/auth/LoginPage';
 import ProtectedRoute from './ProtectedRoute';
-import SubjectsPage from '../pages/admin/SubjectsPage';
 import TopicsPage from '../pages/admin/TopicsPage';
 import PlanTemplatesPage from '../pages/admin/PlanTemplatesPage';
 

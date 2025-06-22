@@ -47,4 +47,48 @@ export const deleteUser = (id: string) => {
     return api.delete(`/AdminUser/${id}`);
 };
 
-export default api; 
+export default api;
+
+// --- Course Management Endpoints ---
+export const getAllCourses = (pagination?: any) => {
+  const params = pagination ? `?pageNumber=${pagination.pageNumber}&pageSize=${pagination.pageSize}` : '';
+  return api.get(`/Course/paged${params}`);
+};
+
+export const getCourseById = (id: number) => {
+  return api.get(`/Course/${id}`);
+};
+
+export const createCourse = (data: any) => {
+  return api.post('/Course', data);
+};
+
+export const updateCourse = (id: number, data: any) => {
+  return api.put(`/Course/${id}`, data);
+};
+
+export const deleteCourse = (id: number) => {
+  return api.delete(`/Course/${id}`);
+};
+
+// --- Course Topic Management Endpoints ---
+export const getAllCourseTopics = (pagination?: any) => {
+  const params = pagination ? `?pageNumber=${pagination.pageNumber}&pageSize=${pagination.pageSize}` : '';
+  return api.get(`/CourseTopic/paged${params}`);
+};
+
+export const getCourseTopicById = (id: number) => {
+  return api.get(`/CourseTopic/${id}`);
+};
+
+export const createCourseTopic = (data: any) => {
+  return api.post('/CourseTopic', data);
+};
+
+export const updateCourseTopic = (id: number, data: any) => {
+  return api.put(`/CourseTopic/${id}`, data);
+};
+
+export const deleteCourseTopic = (id: number) => {
+  return api.delete(`/CourseTopic/${id}`);
+}; 
