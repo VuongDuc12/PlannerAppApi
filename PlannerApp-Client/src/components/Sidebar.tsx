@@ -1,11 +1,12 @@
 // src/components/Sidebar.tsx
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { FiHome, FiUsers, FiBookOpen, FiClipboard, FiFileText, FiLogOut, FiGrid, FiX } from 'react-icons/fi';
+import { FiHome, FiUsers, FiBookOpen, FiClipboard, FiFileText, FiLogOut, FiGrid, FiX, FiBook } from 'react-icons/fi';
 
 const navLinks = [
   { to: '/admin', icon: <FiHome size={20} />, text: 'Thống kê' },
   { to: '/admin/users', icon: <FiUsers size={20} />, text: 'Quản lý người dùng' },
+
   { to: '/admin/subjects', icon: <FiBookOpen size={20} />, text: 'Quản lý môn học' },
   { to: '/admin/topics', icon: <FiClipboard size={20} />, text: 'Quản lý topic môn học' },
   { to: '/admin/plan-templates', icon: <FiFileText size={20} />, text: 'Quản lý mẫu kế hoạch' },
