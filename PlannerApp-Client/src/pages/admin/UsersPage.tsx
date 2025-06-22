@@ -100,15 +100,28 @@ const UsersPage = () => {
     try {
       setLoading(true);
       const response = await getAllUsers();
-      if(response.data.success) {
+      console.log('API Response:', response);
+      
+      // Handle different response structures
+      if (response.data && Array.isArray(response.data)) {
+        // Direct array response
+        setUsers(response.data);
+      } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
+        // Wrapped in data object
         setUsers(response.data.data);
+      } else if (response.data && response.data.items && Array.isArray(response.data.items)) {
+        // Paginated response
+        setUsers(response.data.items);
       } else {
-        setError(response.data.message);
-        toast.error('Tải danh sách người dùng thất bại.');
+        console.warn('Unexpected response structure:', response.data);
+        setUsers([]);
+        setError('Cấu trúc dữ liệu không hợp lệ');
       }
     } catch (err) {
+      console.error('Error fetching users:', err);
       setError('Không thể tải danh sách người dùng.');
       toast.error('Không thể kết nối đến máy chủ.');
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -131,13 +144,21 @@ const UsersPage = () => {
   const handleDelete = async (id: string) => {
     if(window.confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
         toast.promise(
-            deleteUser(id).then(() => {
+            deleteUser(id).then((response) => {
+                console.log('Delete response:', response);
                 fetchUsers(); // Refresh list on success
+                return response;
             }),
             {
                 loading: 'Đang xóa...',
-                success: <b>Xóa người dùng thành công!</b>,
-                error: <b>Xóa người dùng thất bại.</b>,
+                success: (res: any) => {
+                    console.log('Delete success:', res);
+                    return <b>Xóa người dùng thành công!</b>;
+                },
+                error: (err) => {
+                    console.error('Delete error:', err);
+                    return <b>{err.response?.data?.message || 'Xóa người dùng thất bại.'}</b>;
+                },
             }
         );
     }
@@ -160,14 +181,24 @@ const UsersPage = () => {
     };
 
     toast.promise(
-        apiCall().then(() => {
+        apiCall().then((response) => {
+            console.log('API Response:', response);
             fetchUsers();
             setIsModalOpen(false);
+            return response;
         }),
         {
             loading: isUpdating ? 'Đang cập nhật...' : 'Đang tạo...',
-            success: (res: any) => <b>{res.data?.message || (isUpdating ? 'Cập nhật thành công!' : 'Tạo người dùng thành công!')}</b>,
-            error: (err) => <b>{err.response?.data?.message || 'Đã có lỗi xảy ra.'}</b>,
+            success: (res: any) => {
+                console.log('Success response:', res);
+                const message = res.data?.message || (isUpdating ? 'Cập nhật thành công!' : 'Tạo người dùng thành công!');
+                return <b>{message}</b>;
+            },
+            error: (err) => {
+                console.error('Error response:', err);
+                const message = err.response?.data?.message || 'Đã có lỗi xảy ra.';
+                return <b>{message}</b>;
+            },
         }
     );
   };
