@@ -20,32 +20,51 @@ namespace Ucm.Application.Services
         public async Task<IEnumerable<StudyPlanCourseDto>> GetAllAsync()
         {
             var entities = await _repository.GetAllAsync();
-            return entities.Select(MapToDto);
+            return entities.ToList().Select(MapToDto);
         }
 
         public async Task<StudyPlanCourseDto> GetByIdAsync(int id)
         {
             var entity = await _repository.GetByIdAsync(id);
-            return entity == null ? null : MapToDto(entity);
+            if (entity == null) throw new System.Exception($"StudyPlanCourse với id {id} không tồn tại.");
+            return MapToDto(entity);
         }
 
         public async Task<StudyPlanCourseDto> AddAsync(StudyPlanCourseDto dto)
         {
             var entity = MapToEntity(dto);
             await _repository.AddAsync(entity);
-            var saved = await _repository.GetByIdAsync(entity.Id);
-            return MapToDto(saved);
+            await _repository.SaveChangesAsync();
+            return MapToDto(entity);
         }
 
         public async Task UpdateAsync(StudyPlanCourseDto dto)
         {
             var entity = MapToEntity(dto);
-            await _repository.UpdateAsync(entity);
+            _repository.Update(entity);
+            await _repository.SaveChangesAsync();
+            var updated = await _repository.GetByIdAsync(entity.Id);
+            if (updated == null) throw new System.Exception($"Không tìm thấy StudyPlanCourse với id {entity.Id} sau khi cập nhật.");
         }
 
         public async Task DeleteAsync(int id)
         {
-            await _repository.DeleteAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity == null) throw new System.Exception($"Không tìm thấy StudyPlanCourse với id {id} để xóa.");
+            _repository.Delete(entity);
+            await _repository.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<StudyPlanCourseDto>> GetByUserIdAsync(Guid userId)
+        {
+            var entities = await _repository.GetByUserIdAsync(userId);
+            return entities.Select(MapToDto);
+        }
+
+        public async Task<IEnumerable<StudyPlanCourseDto>> GetByStudyPlanIdAsync(int studyPlanId)
+        {
+            var entities = await _repository.GetByStudyPlanIdAsync(studyPlanId);
+            return entities.Select(MapToDto);
         }
 
         // Mapping helpers
@@ -64,7 +83,7 @@ namespace Ucm.Application.Services
                 Id = dto.Id,
                 StudyPlanId = dto.StudyPlanId,
                 CourseId = dto.CourseId,
-                UserId = dto.UserId
+                UserId = dto.UserId ?? Guid.Empty
             };
     }
 }

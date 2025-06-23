@@ -10,6 +10,10 @@ import LoginPage from '../pages/auth/LoginPage';
 import ProtectedRoute from './ProtectedRoute';
 import TopicsPage from '../pages/admin/TopicsPage';
 import PlanTemplatesPage from '../pages/admin/PlanTemplatesPage';
+import StudyPlanAdminPage from '../pages/admin/StudyPlanAdminPage';
+import StudyPlanListPage from '../pages/admin/StudyPlanListPage';
+import StudyPlanTasksPage from '../pages/admin/StudyPlanTasksPage';
+import StudyPlanCoursesPage from '../pages/admin/StudyPlanCoursesPage';
 
 
 const router = createBrowserRouter([
@@ -33,6 +37,10 @@ const router = createBrowserRouter([
           { path: 'subjects', element: <SubjectsPage /> },
           { path: 'topics', element: <TopicsPage /> },
           { path: 'plan-templates', element: <PlanTemplatesPage /> },
+          { path: 'studyplans', element: <StudyPlanAdminPage /> },
+          { path: 'studyplans/:userId', element: <StudyPlanListPage /> },
+          { path: 'studyplans/:planId/tasks', element: <StudyPlanTasksPage /> },
+          { path: 'studyplans/:planId/courses', element: <StudyPlanCoursesPage /> },
         ]
       }
     ]

@@ -33,19 +33,25 @@ namespace Ucm.Application.Services
         public async Task<StudyLogDto> AddAsync(StudyLogDto dto)
         {
             var entity = MapToEntity(dto);
-            var created = await _repository.AddAsync(entity);
-            return MapToDto(created);
+            await _repository.AddAsync(entity);
+            await _repository.SaveChangesAsync();
+            var saved = await _repository.GetByIdAsync(entity.Id);
+            return MapToDto(saved);
         }
 
         public async Task UpdateAsync(StudyLogDto dto)
         {
             var entity = MapToEntity(dto);
-            await _repository.UpdateAsync(entity);
+            _repository.Update(entity);
+            await _repository.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
         {
-            await _repository.DeleteAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity == null) return;
+            _repository.Delete(entity);
+            await _repository.SaveChangesAsync();
         }
 
         // Mapping helpers

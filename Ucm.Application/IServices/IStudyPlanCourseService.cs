@@ -11,5 +11,7 @@ namespace Ucm.Application.IServices
         Task<StudyPlanCourseDto> AddAsync(StudyPlanCourseDto dto);
         Task UpdateAsync(StudyPlanCourseDto dto);
         Task DeleteAsync(int id);
+        Task<IEnumerable<StudyPlanCourseDto>> GetByUserIdAsync(Guid userId);
+        Task<IEnumerable<StudyPlanCourseDto>> GetByStudyPlanIdAsync(int studyPlanId);
     }
 }

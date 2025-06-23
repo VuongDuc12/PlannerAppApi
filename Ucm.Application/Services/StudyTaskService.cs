@@ -88,19 +88,24 @@ namespace Ucm.Application.Services
         public async Task<StudyTaskDto> AddAsync(StudyTaskDto dto)
         {
             var entity = MapToEntity(dto);
-            var created = await _repository.AddAsync(entity);
-            return await GetByIdAsync(created.Id);
+            await _repository.AddAsync(entity);
+            await _repository.SaveChangesAsync();
+            return await GetByIdAsync(entity.Id);
         }
         
         public async Task UpdateAsync(StudyTaskDto dto)
         {
             var entity = MapToEntity(dto);
-            await _repository.UpdateAsync(entity);
+            _repository.Update(entity);
+            await _repository.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
         {
-            await _repository.DeleteAsync(id);
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity == null) return;
+            _repository.Delete(entity);
+            await _repository.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<StudyTaskDto>> GetByDateAsync(Guid userId, DateTime date)

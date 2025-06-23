@@ -9,6 +9,7 @@ const navLinks = [
   { to: '/admin/subjects', icon: <FiBookOpen size={20} />, text: 'Quản lý môn học' },
   { to: '/admin/topics', icon: <FiClipboard size={20} />, text: 'Quản lý topic môn học' },
   { to: '/admin/plan-templates', icon: <FiFileText size={20} />, text: 'Quản lý mẫu kế hoạch' },
+  { to: '/admin/studyplans', icon: <FiFileText size={20} />, text: 'Quản lý kế hoạch học tập' },
 ];
 
 const SidebarContent = ({ onLinkClick }: { onLinkClick: () => void }) => {

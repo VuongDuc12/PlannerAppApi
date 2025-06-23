@@ -1,25 +1,39 @@
 // src/layouts/AdminLayout.tsx
-import React, { useState } from 'react';
+import React, { useState, createContext, useContext } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { FiMenu, FiBell, FiSearch, FiSettings } from 'react-icons/fi';
 import { Toaster } from 'react-hot-toast';
 
+// Context để các trang con có thể set tiêu đề động
+export const AdminPageContext = createContext({
+  setTitle: (title: string) => {},
+  setDescription: (desc: string) => {},
+});
+
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const [pageTitle, setPageTitle] = useState<string | null>(null);
+  const [pageDesc, setPageDesc] = useState<string | null>(null);
 
   const getPageTitle = () => {
+    if (pageTitle) return pageTitle;
     const pathMap: { [key: string]: string } = {
       'admin': 'Dashboard',
       'users': 'Quản lý người dùng',
       'subjects': 'Quản lý môn học',
       'topics': 'Quản lý topic môn học',
-      'plan-templates': 'Quản lý mẫu kế hoạch'
+      'plan-templates': 'Quản lý mẫu kế hoạch',
+      'studyplans': 'Quản lý kế hoạch học tập',
     };
-    
     const path = location.pathname.split('/').pop() || 'admin';
     return pathMap[path] || 'Dashboard';
+  };
+
+  const getDescription = () => {
+    if (pageDesc) return pageDesc;
+    return 'Quản lý hệ thống TLU Study Planner';
   };
 
   const getBreadcrumb = () => {
@@ -28,14 +42,15 @@ const AdminLayout = () => {
       'users': 'Người dùng',
       'subjects': 'Môn học',
       'topics': 'Topic môn học',
-      'plan-templates': 'Mẫu kế hoạch'
+      'plan-templates': 'Mẫu kế hoạch',
+      'studyplans': 'Kế hoạch học tập',
     };
-    
     const path = location.pathname.split('/').pop() || 'admin';
     return pathMap[path] || 'Dashboard';
   };
 
   return (
+    <AdminPageContext.Provider value={{ setTitle: setPageTitle, setDescription: setPageDesc }}>
     <div className="flex h-screen bg-gray-50 font-sans">
       <Toaster 
         position="top-right" 
@@ -83,7 +98,7 @@ const AdminLayout = () => {
               
               <div className="hidden sm:block">
                 <h1 className="text-xl font-bold text-gray-900">{getPageTitle()}</h1>
-                <p className="text-sm text-gray-500">Quản lý hệ thống TLU Study Planner</p>
+                <p className="text-sm text-gray-500">{getDescription()}</p>
               </div>
             </div>
 
@@ -145,6 +160,7 @@ const AdminLayout = () => {
         </main>
       </div>
     </div>
+    </AdminPageContext.Provider>
   );
 };
 

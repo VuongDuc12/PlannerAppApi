@@ -8,6 +8,8 @@ using Ucm.Application.IServices;
 using Ucm.Application.DTOs.StudyPlan;
 using Ucm.Shared.Results;
 using Ucm.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
+using Ucm.Infrastructure.Data.Models;
 
 namespace Ucm.API.Controllers
 {
@@ -22,6 +24,43 @@ namespace Ucm.API.Controllers
         {
             _studyPlanService = studyPlanService;
         }
+[HttpGet("user-stats")]
+public async Task<IActionResult> GetUserPlanStats(
+    [FromServices] UserManager<AppUserEF> userManager,
+    [FromServices] IStudyPlanService studyPlanService)
+{
+    var users = userManager.Users.ToList();
+    var plans = await studyPlanService.GetAllAsync();
+
+    var stats = users.Select(u => new {
+        userId = u.Id,
+        userName = u.UserName,
+        fullName = u.FullName,
+        email = u.Email,
+        planCount = plans.Count(p => p.UserId == u.Id)
+    });
+
+    return Ok(Result<IEnumerable<object>>.Ok(stats));
+}
+[HttpGet("user/{userId}")]
+
+public async Task<IActionResult> GetPlansByUser(Guid userId)
+{
+    var plans = await _studyPlanService.GetAllByUserIdAsync(userId);
+    var planDtos = plans.Select(plan => new StudyPlanDto
+    {
+        Id = plan.Id,
+        UserId = plan.UserId,
+        PlanName = plan.PlanName,
+        StartDate = plan.StartDate,
+        EndDate = plan.EndDate,
+        Semester = plan.Semester,
+        AcademicYear = plan.AcademicYear,
+        WeeklyStudyGoalHours = plan.WeeklyStudyGoalHours
+    });
+    return Ok(Result<IEnumerable<StudyPlanDto>>.Ok(planDtos));
+}
+
 
         // Update the GetAll method to map StudyPlan entities to StudyPlanDto
         [HttpGet]

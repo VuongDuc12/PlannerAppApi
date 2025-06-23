@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://14.225.210.119:5000/api',
+  // baseURL: 'http://14.225.210.119:5000/api',
+  baseURL: 'http://localhost:5210/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -91,4 +92,11 @@ export const updateCourseTopic = (id: number, data: any) => {
 
 export const deleteCourseTopic = (id: number) => {
   return api.delete(`/CourseTopic/${id}`);
-}; 
+};
+
+export const getUserPlanStats = () => api.get('/StudyPlan/user-stats');
+export const getPlansByUser = (userId: string) => api.get(`/StudyPlan/user/${userId}`);
+export const getCoursesByPlan = (planId: number) =>
+  api.get(`/StudyPlanCourse/plan/${planId}`);
+export const getTasksByPlan = (planId: number) =>
+  api.get(`/StudyTask/plan/${planId}`); 

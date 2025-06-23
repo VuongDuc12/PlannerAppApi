@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Ucm.Application.Dtos;
 using Ucm.Application.IServices;
 using Ucm.Shared.Results;
+using System.Security.Claims;
+using System;
 
 namespace Ucm.API.Controllers
 {
@@ -40,6 +42,12 @@ namespace Ucm.API.Controllers
             if (dto == null)
                 return BadRequest(Result<StudyPlanCourseDto>.Fail("Invalid data"));
 
+            // Lấy userId từ token
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized();
+            dto.UserId = userId;
+
             var created = await _service.AddAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, Result<StudyPlanCourseDto>.Ok(created));
         }
@@ -67,6 +75,23 @@ namespace Ucm.API.Controllers
 
             await _service.DeleteAsync(id);
             return Ok(Result.Ok("Deleted successfully"));
+        }
+
+        [HttpGet("user")]
+        public async Task<ActionResult<Result<IEnumerable<StudyPlanCourseDto>>>> GetByUserId()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized();
+            var result = await _service.GetByUserIdAsync(userId);
+            return Ok(Result<IEnumerable<StudyPlanCourseDto>>.Ok(result));
+        }
+
+        [HttpGet("plan/{studyPlanId}")]
+        public async Task<ActionResult<Result<IEnumerable<StudyPlanCourseDto>>>> GetByStudyPlanId(int studyPlanId)
+        {
+            var result = await _service.GetByStudyPlanIdAsync(studyPlanId);
+            return Ok(Result<IEnumerable<StudyPlanCourseDto>>.Ok(result));
         }
     }
 }
