@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: plannerapp-db
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: "123456@A"
+      ACCEPT_EULA: "Y"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - plannerapp-net
+
+  backend:
+    build:
+      context: .
+      dockerfile: Ucm.API/Dockerfile
+    container_name: plannerapp-backend
+    ports:
+      - "5000:8080"
+    depends_on:
+      - db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=db;Database=TluStudyPlannerApp_DB2;User Id=sa;Password=123456@A;TrustServerCertificate=True
+      - Jwt__Key=f7s8#2jk!4NM56qz!X7MnRw4$D1e2BhBt
+      - Jwt__Issuer=PlannerApp
+      - Jwt__Audience=PlannerApp
+      - Logging__LogLevel__Default=Information
+      - Logging__LogLevel__Microsoft.AspNetCore=Warning
+      - AllowedHosts=*
+    networks:
+      - plannerapp-net
+
+  frontend:
+    build:
+      context: ./PlannerApp-Client
+      dockerfile: Dockerfile
+    container_name: plannerapp-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - plannerapp-net
+
+networks:
+  plannerapp-net:
+    driver: bridge
+
+volumes:
+  sqlserver_data:
