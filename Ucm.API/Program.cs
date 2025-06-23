@@ -104,9 +104,26 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-    await IdentitySeeder.SeedRolesAsync(scope.ServiceProvider);
-    await IdentitySeeder.SeedAdminAsync(scope.ServiceProvider); // optional
+    
+    try
+    {
+        // Đảm bảo database tồn tại
+        db.Database.EnsureCreated();
+        
+        // Chỉ migrate nếu có migrations chưa apply
+        if (db.Database.GetPendingMigrations().Any())
+        {
+            db.Database.Migrate();
+        }
+        
+        await IdentitySeeder.SeedRolesAsync(scope.ServiceProvider);
+        await IdentitySeeder.SeedAdminAsync(scope.ServiceProvider);
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating the database.");
+    }
 }
 
 // 🧪 Bỏ điều kiện môi trường để Swagger chạy cả ở VPS
