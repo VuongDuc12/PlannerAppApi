@@ -25,13 +25,6 @@ services:
       - db
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Server=db;Database=TluStudyPlannerApp_DB2;User Id=sa;Password=123456@A;TrustServerCertificate=True
-      - Jwt__Key=f7s8#2jk!4NM56qz!X7MnRw4$D1e2BhBt
-      - Jwt__Issuer=PlannerApp
-      - Jwt__Audience=PlannerApp
-      - Logging__LogLevel__Default=Information
-      - Logging__LogLevel__Microsoft.AspNetCore=Warning
-      - AllowedHosts=*
     networks:
       - plannerapp-net
 
