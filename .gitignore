@@ -24,7 +24,6 @@ appsettings.Development.json
 secrets.json
 
 # Ignore EF Core migrations if unwanted
-Migrations/
 
 # Ignore Docker
 **/docker-compose.*
