@@ -13,11 +13,6 @@ services:
       - sqlserver_data:/var/opt/mssql
     networks:
       - plannerapp-net
-    healthcheck:
-      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "123456@A" -Q "SELECT 1" || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   backend:
     build:
@@ -27,8 +22,7 @@ services:
     ports:
       - "5000:8080"
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
     networks:
