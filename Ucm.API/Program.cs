@@ -1,5 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -13,7 +12,7 @@ using Ucm.Infrastructure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ----------------------- Add Services -----------------------
+// -------------------- Add Services --------------------
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -28,7 +27,7 @@ builder.Services.AddIdentity<AppUserEF, IdentityRole<Guid>>(options =>
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
-// 🔐 JWT Authentication
+// 🔐 JWT
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -49,13 +48,10 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// 📜 Authorization
 builder.Services.AddAuthorization();
-
-// ✅ Bổ sung dòng này để chạy được controller
 builder.Services.AddControllers();
 
-// 🌐 Swagger + JWT Support
+// ✅ Swagger (hoạt động cả ngoài Production nếu cần)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -87,30 +83,46 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// ----------------------- Build & Configure -----------------------
+// 🌐 CORS (thêm IP VPS nếu FE chạy trên IP thật)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
+
+// -------------------- Build & Configure --------------------
 
 var app = builder.Build();
+
+// Auto migrate DB
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    await IdentitySeeder.SeedRolesAsync(services);
-    await IdentitySeeder.SeedAdminAsync(services); // optional
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+    await IdentitySeeder.SeedRolesAsync(scope.ServiceProvider);
+    await IdentitySeeder.SeedAdminAsync(scope.ServiceProvider); // optional
 }
-if (app.Environment.IsDevelopment())
+
+// 🧪 Bỏ điều kiện môi trường để Swagger chạy cả ở VPS
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "UCM API v1");
-        c.RoutePrefix = string.Empty;
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "UCM API v1");
+    c.RoutePrefix = "swagger";
+});
 
-app.UseHttpsRedirection();
-
+// 🧩 Middleware
+app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers(); // ✅ Mapping controller routes
+app.MapControllers();
 
+// ❌ KHÔNG cần UseHttpsRedirection khi chạy trong Docker (không có cert thật)
 app.Run();

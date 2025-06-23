@@ -6,6 +6,9 @@ using Ucm.Domain.Entities;
 using Ucm.Domain.IRepositories;
 using Ucm.Infrastructure.Data;
 using Ucm.Infrastructure.Data.Models;
+using System;
+using System.Linq.Expressions;
+using Ucm.Shared.Common.Pagination;
 
 namespace Ucm.Infrastructure.Repositories
 {
@@ -31,12 +34,19 @@ namespace Ucm.Infrastructure.Repositories
             return ef == null ? null : MapToEntity(ef);
         }
 
-        public async Task<StudyPlanCourse> AddAsync(StudyPlanCourse entity)
+        public async Task<IEnumerable<StudyPlanCourse>> GetByIdsAsync(List<int> ids)
+        {
+            var efItems = await _context.StudyPlanCourses
+                .Where(spc => ids.Contains(spc.Id))
+                .ToListAsync();
+            return efItems.Select(MapToEntity);
+        }
+
+        public async Task AddAsync(StudyPlanCourse entity)
         {
             var ef = MapToEf(entity);
             _context.StudyPlanCourses.Add(ef);
             await _context.SaveChangesAsync();
-            return MapToEntity(ef);
         }
 
         public async Task UpdateAsync(StudyPlanCourse entity)
@@ -46,7 +56,6 @@ namespace Ucm.Infrastructure.Repositories
             ef.StudyPlanId = entity.StudyPlanId;
             ef.CourseId = entity.CourseId;
             ef.UserId = entity.UserId;
-            // Update other fields as needed
             await _context.SaveChangesAsync();
         }
 
@@ -56,6 +65,31 @@ namespace Ucm.Infrastructure.Repositories
             if (ef == null) return;
             _context.StudyPlanCourses.Remove(ef);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<PagedResult<StudyPlanCourse>> GetPagedAsync(PaginationParams pagination)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<IEnumerable<StudyPlanCourse>> FindAsync(Expression<Func<StudyPlanCourse, bool>> predicate)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Update(StudyPlanCourse entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Delete(StudyPlanCourse entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            throw new NotImplementedException();
         }
 
         // Mapping helpers

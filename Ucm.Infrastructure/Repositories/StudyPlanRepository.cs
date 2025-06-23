@@ -28,7 +28,13 @@ namespace Ucm.Infrastructure.Repositories
 
             return studyPlanEfs.Select(ef => _mapper.ToEntity(ef));
         }
-
+        public async Task<IEnumerable<StudyPlan>> GetByIdsAsync(List<int> ids)
+        {
+            var efItems = await _context.StudyPlans
+                .Where(sp => ids.Contains(sp.Id))
+                .ToListAsync();
+            return efItems.Select(_mapper.ToEntity);
+        }
     }
 
 }

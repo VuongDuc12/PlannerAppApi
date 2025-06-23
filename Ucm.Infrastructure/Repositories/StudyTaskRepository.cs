@@ -7,6 +7,7 @@ using Ucm.Domain.Enums;
 using Ucm.Domain.IRepositories;
 using Ucm.Infrastructure.Data;
 using Ucm.Infrastructure.Data.Models;
+using System;
 
 namespace Ucm.Infrastructure.Repositories
 {
@@ -73,6 +74,48 @@ namespace Ucm.Infrastructure.Repositories
             if (ef == null) return;
             _context.StudyTasks.Remove(ef);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<StudyTask>> GetByDateAsync(Guid userId, DateTime date)
+        {
+            var planCourseIdsForUser = await _context.StudyPlanCourses
+                                                     .Where(spc => spc.UserId == userId)
+                                                     .Select(spc => spc.Id)
+                                                     .ToListAsync();
+
+            if (!planCourseIdsForUser.Any())
+            {
+                return new List<StudyTask>();
+            }
+
+            var entities = await _context.StudyTasks
+                .Include(x => x.Logs)
+                .Include(x => x.Resources)
+                .Where(x => x.ScheduledDate.HasValue && x.ScheduledDate.Value.ToDateTime(TimeOnly.MinValue).Date == date.Date && planCourseIdsForUser.Contains(x.PlanCourseId))
+                .ToListAsync();
+
+            return entities.Select(MapToEntity);
+        }
+
+        public async Task<IEnumerable<StudyTask>> GetByStudyPlanIdAsync(Guid userId, int studyPlanId)
+        {
+            var planCourseIds = await _context.StudyPlanCourses
+                                              .Where(spc => spc.StudyPlanId == studyPlanId && spc.UserId == userId)
+                                              .Select(spc => spc.Id)
+                                              .ToListAsync();
+
+            if (!planCourseIds.Any())
+            {
+                return new List<StudyTask>();
+            }
+
+            var entities = await _context.StudyTasks
+                .Include(x => x.Logs)
+                .Include(x => x.Resources)
+                .Where(x => planCourseIds.Contains(x.PlanCourseId))
+                .ToListAsync();
+
+            return entities.Select(MapToEntity);
         }
 
         // Mapping helpers

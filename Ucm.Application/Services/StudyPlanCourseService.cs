@@ -32,8 +32,9 @@ namespace Ucm.Application.Services
         public async Task<StudyPlanCourseDto> AddAsync(StudyPlanCourseDto dto)
         {
             var entity = MapToEntity(dto);
-            var created = await _repository.AddAsync(entity);
-            return MapToDto(created);
+            await _repository.AddAsync(entity);
+            var saved = await _repository.GetByIdAsync(entity.Id);
+            return MapToDto(saved);
         }
 
         public async Task UpdateAsync(StudyPlanCourseDto dto)

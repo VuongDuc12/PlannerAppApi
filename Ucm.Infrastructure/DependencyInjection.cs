@@ -30,10 +30,13 @@ namespace Ucm.Infrastructure
             services.AddScoped<IStudyPlanRepository, StudyPlanRepository>();
             services.AddScoped<IStudyTaskRepository, StudyTaskRepository>();
             services.AddScoped<IStudyPlanCourseRepository, StudyPlanCourseRepository>();
+            services.AddScoped<ICourseTopicRepository, CourseTopicRepository>();
+
 
 
 
             services.AddScoped<IEntityEfMapper<Course, CourseEf>, CourseEntityEfMapper>();
+            services.AddScoped<IEntityEfMapper<CourseTopic, CourseTopicEf>, CourseTopicEntityEfMapper>();
 
             services.AddScoped<IEntityEfMapper<StudyPlan, StudyPlanEf>, StudyPlanEntityEfMapper>();
             return services;
