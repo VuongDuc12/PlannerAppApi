@@ -4,11 +4,15 @@ using System.Threading.Tasks;
 using Ucm.Application.Dtos;
 using Ucm.Application.IServices;
 using Ucm.Shared.Results;
+using System;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Ucm.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class StudyTaskController : ControllerBase
     {
         private readonly IStudyTaskService _service;
@@ -32,6 +36,30 @@ namespace Ucm.API.Controllers
             if (result == null)
                 return NotFound(Result<StudyTaskDto>.Fail("Not found"));
             return Ok(Result<StudyTaskDto>.Ok(result));
+        }
+
+        [HttpGet("today")]
+        public async Task<ActionResult<Result<IEnumerable<StudyTaskDto>>>> GetToday()
+        {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var result = await _service.GetTodayAsync(userId);
+            return Ok(Result<IEnumerable<StudyTaskDto>>.Ok(result));
+        }
+
+        [HttpGet("day/{date}")]
+        public async Task<ActionResult<Result<IEnumerable<StudyTaskDto>>>> GetByDay(DateTime date)
+        {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var result = await _service.GetByDateAsync(userId, date);
+            return Ok(Result<IEnumerable<StudyTaskDto>>.Ok(result));
+        }
+
+        [HttpGet("plan/{studyPlanId}")]
+        public async Task<ActionResult<Result<IEnumerable<StudyTaskDto>>>> GetByStudyPlanId(int studyPlanId)
+        {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var result = await _service.GetByStudyPlanIdAsync(userId, studyPlanId);
+            return Ok(Result<IEnumerable<StudyTaskDto>>.Ok(result));
         }
 
         [HttpPost]

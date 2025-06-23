@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Ucm.Application.Dtos;
+using Ucm.Application.DTOs;
 using Ucm.Application.IServices;
 using Ucm.Shared.Results;
 
