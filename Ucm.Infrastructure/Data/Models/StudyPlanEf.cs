@@ -17,6 +17,8 @@ namespace Ucm.Infrastructure.Data.Models
         public string Semester { get; set; }
         public string AcademicYear { get; set; }
         public int? WeeklyStudyGoalHours { get; set; }
+        public int? CourseCount { get; set; }  // Số môn đăng ký
+        public bool? Completed { get; set; } // Trạng thái hoàn thành
         public ICollection<StudyPlanCourseEf> PlanCourses { get; set; }
     }
 

@@ -11,5 +11,6 @@ namespace Ucm.Application.DTOs.StudyPlan
         public string Semester { get; set; }
         public string AcademicYear { get; set; }
         public int? WeeklyStudyGoalHours { get; set; }
+        public bool? Completed { get; set; }
     }
 }

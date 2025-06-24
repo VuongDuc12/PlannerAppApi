@@ -31,14 +31,18 @@ namespace Ucm.Infrastructure
             services.AddScoped<IStudyTaskRepository, StudyTaskRepository>();
             services.AddScoped<IStudyPlanCourseRepository, StudyPlanCourseRepository>();
             services.AddScoped<ICourseTopicRepository, CourseTopicRepository>();
-
-
+            services.AddScoped<ITaskResourceRepository, TaskResourceRepository>();
+            services.AddScoped<IStudyLogRepository, StudyLogRepository>();
 
 
             services.AddScoped<IEntityEfMapper<Course, CourseEf>, CourseEntityEfMapper>();
             services.AddScoped<IEntityEfMapper<CourseTopic, CourseTopicEf>, CourseTopicEntityEfMapper>();
-
+            services.AddScoped<IEntityEfMapper<StudyPlanCourse, StudyPlanCourseEf>, StudyPlanCourseEntityEfMapper>();
             services.AddScoped<IEntityEfMapper<StudyPlan, StudyPlanEf>, StudyPlanEntityEfMapper>();
+            services.AddScoped<IEntityEfMapper<StudyTask, StudyTaskEf>, StudyTaskEntityEfMapper>();
+            services.AddScoped<IEntityEfMapper<StudyLog, StudyLogEf>, StudyLogEntityEfMapper>();
+            services.AddScoped<IEntityEfMapper<TaskResource, TaskResourceEf>, TaskResourceEntityEfMapper>();
+
             return services;
         }
     }

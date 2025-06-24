@@ -1,79 +1,43 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using HotelApp.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ucm.Domain.Entities;
 using Ucm.Domain.Enums;
 using Ucm.Domain.IRepositories;
+using Ucm.Infrastructure.Common.Mappers;
 using Ucm.Infrastructure.Data;
 using Ucm.Infrastructure.Data.Models;
-using System;
 
 namespace Ucm.Infrastructure.Repositories
 {
-    public class StudyTaskRepository : IStudyTaskRepository
+    public class StudyTaskRepository : RepositoryBase<StudyTask, StudyTaskEf>, IStudyTaskRepository
     {
-        private readonly AppDbContext _context;
+       
+        public StudyTaskRepository(AppDbContext context, IEntityEfMapper<StudyTask, StudyTaskEf> mapper)
+          : base(context, mapper) { }
 
-        public StudyTaskRepository(AppDbContext context)
+        // Helper method to include all related data
+        private IQueryable<StudyTaskEf> IncludeAllRelatedData(IQueryable<StudyTaskEf> query)
         {
-            _context = context;
+            return query
+                .Include(t => t.PlanCourse)
+                    .ThenInclude(pc => pc.StudyPlan)
+                .Include(t => t.PlanCourse)
+                    .ThenInclude(pc => pc.Course)
+                .Include(t => t.CourseTopic)
+                .Include(t => t.Logs)
+                .Include(t => t.Resources);
         }
 
-        public async Task<IEnumerable<StudyTask>> GetAllAsync()
+        // Override GetByIdAsync to include related data
+        public new async Task<StudyTask> GetByIdAsync(int id)
         {
-            var entities = await _context.StudyTasks
-                .Include(x => x.Logs)
-                .Include(x => x.Resources)
-                .ToListAsync();
-            return entities.Select(MapToEntity);
-        }
-
-        public async Task<StudyTask> GetByIdAsync(int id)
-        {
-            var ef = await _context.StudyTasks
-                .Include(x => x.Logs)
-                .Include(x => x.Resources)
+            var entity = await IncludeAllRelatedData(_context.StudyTasks)
                 .FirstOrDefaultAsync(x => x.Id == id);
-            return ef == null ? null : MapToEntity(ef);
-        }
-
-        public async Task<StudyTask> AddAsync(StudyTask entity)
-        {
-            var ef = MapToEf(entity);
-            _context.StudyTasks.Add(ef);
-            await _context.SaveChangesAsync();
-            return MapToEntity(ef);
-        }
-
-        public async Task UpdateAsync(StudyTask entity)
-        {
-            var ef = await _context.StudyTasks
-                .Include(x => x.Logs)
-                .Include(x => x.Resources)
-                .FirstOrDefaultAsync(x => x.Id == entity.Id);
-            if (ef == null) return;
-
-            ef.PlanCourseId = entity.PlanCourseId;
-            ef.CourseTopicId = entity.CourseTopicId;
-            ef.TaskName = entity.TaskName;
-            ef.TaskDescription = entity.TaskDescription;
-            ef.EstimatedHours = entity.EstimatedHours;
-            ef.DueDate = entity.DueDate;
-            ef.ScheduledDate = entity.ScheduledDate;
-            ef.Status = entity.Status;
-            ef.CompletionDate = entity.CompletionDate;
-            // Optionally update Logs and Resources here
-
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            var ef = await _context.StudyTasks.FindAsync(id);
-            if (ef == null) return;
-            _context.StudyTasks.Remove(ef);
-            await _context.SaveChangesAsync();
+            return entity != null ? _mapper.ToEntity(entity) : null;
         }
 
         public async Task<IEnumerable<StudyTask>> GetByDateAsync(Guid userId, DateTime date)
@@ -88,13 +52,55 @@ namespace Ucm.Infrastructure.Repositories
                 return new List<StudyTask>();
             }
 
-            var entities = await _context.StudyTasks
-                .Include(x => x.Logs)
-                .Include(x => x.Resources)
-                .Where(x => x.ScheduledDate.HasValue && x.ScheduledDate.Value.ToDateTime(TimeOnly.MinValue).Date == date.Date && planCourseIdsForUser.Contains(x.PlanCourseId))
+            var entities = await IncludeAllRelatedData(_context.StudyTasks)
+                .Where(x => x.ScheduledDate.HasValue && 
+                           x.ScheduledDate.Value == DateOnly.FromDateTime(date) && 
+                           planCourseIdsForUser.Contains(x.PlanCourseId))
+                .OrderBy(x => x.ScheduledDate)
+                .ThenBy(x => x.DueDate)
                 .ToListAsync();
 
-            return entities.Select(MapToEntity);
+            return entities.Select(_mapper.ToEntity);
+        }
+
+        public async Task<IEnumerable<StudyTask>> GetByDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate)
+        {
+            var planCourseIdsForUser = await _context.StudyPlanCourses
+                                                     .Where(spc => spc.UserId == userId)
+                                                     .Select(spc => spc.Id)
+                                                     .ToListAsync();
+
+            if (!planCourseIdsForUser.Any())
+            {
+                return new List<StudyTask>();
+            }
+
+            var startDateOnly = DateOnly.FromDateTime(startDate);
+            var endDateOnly = DateOnly.FromDateTime(endDate);
+
+            var entities = await IncludeAllRelatedData(_context.StudyTasks)
+                .Where(x => x.ScheduledDate.HasValue && 
+                           x.ScheduledDate.Value >= startDateOnly && 
+                           x.ScheduledDate.Value <= endDateOnly && 
+                           planCourseIdsForUser.Contains(x.PlanCourseId))
+                .OrderBy(x => x.ScheduledDate)
+                .ThenBy(x => x.DueDate)
+                .ToListAsync();
+
+            return entities.Select(_mapper.ToEntity);
+        }
+
+        public async Task<IEnumerable<StudyTask>> GetByWeekAsync(Guid userId, DateTime weekStart)
+        {
+            var weekEnd = weekStart.AddDays(6);
+            return await GetByDateRangeAsync(userId, weekStart, weekEnd);
+        }
+
+        public async Task<IEnumerable<StudyTask>> GetByMonthAsync(Guid userId, int year, int month)
+        {
+            var startDate = new DateTime(year, month, 1);
+            var endDate = startDate.AddMonths(1).AddDays(-1);
+            return await GetByDateRangeAsync(userId, startDate, endDate);
         }
 
         public async Task<IEnumerable<StudyTask>> GetByStudyPlanIdAsync(Guid userId, int studyPlanId)
@@ -109,59 +115,85 @@ namespace Ucm.Infrastructure.Repositories
                 return new List<StudyTask>();
             }
 
-            var entities = await _context.StudyTasks
-                .Include(x => x.Logs)
-                .Include(x => x.Resources)
+            var entities = await IncludeAllRelatedData(_context.StudyTasks)
                 .Where(x => planCourseIds.Contains(x.PlanCourseId))
+                .OrderBy(x => x.ScheduledDate)
+                .ThenBy(x => x.DueDate)
                 .ToListAsync();
 
-            return entities.Select(MapToEntity);
+            return entities.Select(_mapper.ToEntity);
         }
 
-        // Mapping helpers
-        private StudyTask MapToEntity(StudyTaskEf ef) =>
-    new StudyTask
-    {
-        Id = ef.Id,
-        PlanCourseId = ef.PlanCourseId,
-        CourseTopicId = ef.CourseTopicId,
-        TaskName = ef.TaskName,
-        TaskDescription = ef.TaskDescription,
-        EstimatedHours = ef.EstimatedHours,
-        DueDate = ef.DueDate,
-        ScheduledDate = ef.ScheduledDate,
-        Status = ef.Status,
-        CompletionDate = ef.CompletionDate,
-        Logs = ef.Logs?.Select(log => new StudyLog
+        public async Task<IEnumerable<StudyTask>> GetByPlanCourseIdAsync(Guid userId, int planCourseId)
         {
-            Id = log.Id,
-            TaskId = log.TaskId,
-            ActualTimeSpent = log.ActualTimeSpent,
-            LogDate = log.LogDate
-        }).ToList(),
-        Resources = ef.Resources?.Select(res => new TaskResource
-        {
-            Id = res.Id,
-            TaskId = res.TaskId,
-            ResourceType = Enum.TryParse<ResourceType>(res.ResourceType, out var parsedType) ? parsedType : ResourceType.Other,
-            ResourceURL = res.ResourceURL
-        }).ToList()
-    };
+            // Verify user has access to this plan course
+            var hasAccess = await _context.StudyPlanCourses
+                .AnyAsync(spc => spc.Id == planCourseId && spc.UserId == userId);
 
-        private StudyTaskEf MapToEf(StudyTask entity) =>
-            new StudyTaskEf
+            if (!hasAccess)
             {
-                Id = entity.Id,
-                PlanCourseId = entity.PlanCourseId,
-                CourseTopicId = entity.CourseTopicId,
-                TaskName = entity.TaskName,
-                TaskDescription = entity.TaskDescription,
-                EstimatedHours = entity.EstimatedHours,
-                DueDate = entity.DueDate,
-                ScheduledDate = entity.ScheduledDate,
-                Status = entity.Status,
-                CompletionDate = entity.CompletionDate,
-                // Optionally map Logs and Resources here
-            };
+                return new List<StudyTask>();
+            }
+
+            var entities = await IncludeAllRelatedData(_context.StudyTasks)
+                .Where(x => x.PlanCourseId == planCourseId)
+                .OrderBy(x => x.ScheduledDate)
+                .ThenBy(x => x.DueDate)
+                .ToListAsync();
+
+            return entities.Select(_mapper.ToEntity);
+        }
+
+        public async Task<IEnumerable<StudyTask>> GetUpcomingAsync(Guid userId, int days = 7)
+        {
+            var startDate = DateTime.Today;
+            var endDate = startDate.AddDays(days);
+            return await GetByDateRangeAsync(userId, startDate, endDate);
+        }
+
+        public async Task<IEnumerable<StudyTask>> GetOverdueAsync(Guid userId)
+        {
+            var planCourseIdsForUser = await _context.StudyPlanCourses
+                                                     .Where(spc => spc.UserId == userId)
+                                                     .Select(spc => spc.Id)
+                                                     .ToListAsync();
+
+            if (!planCourseIdsForUser.Any())
+            {
+                return new List<StudyTask>();
+            }
+
+            var entities = await IncludeAllRelatedData(_context.StudyTasks)
+                .Where(x => x.DueDate.HasValue && 
+                           x.DueDate.Value < DateTime.Now && 
+                           x.Status != "Completed" &&
+                           planCourseIdsForUser.Contains(x.PlanCourseId))
+                .OrderBy(x => x.DueDate)
+                .ToListAsync();
+
+            return entities.Select(_mapper.ToEntity);
+        }
+
+        public async Task<IEnumerable<StudyTask>> GetByStatusAsync(Guid userId, string status)
+        {
+            var planCourseIdsForUser = await _context.StudyPlanCourses
+                                                     .Where(spc => spc.UserId == userId)
+                                                     .Select(spc => spc.Id)
+                                                     .ToListAsync();
+
+            if (!planCourseIdsForUser.Any())
+            {
+                return new List<StudyTask>();
+            }
+
+            var entities = await IncludeAllRelatedData(_context.StudyTasks)
+                .Where(x => x.Status == status && 
+                           planCourseIdsForUser.Contains(x.PlanCourseId))
+                .OrderBy(x => x.ScheduledDate)
+                .ThenBy(x => x.DueDate)
+                .ToListAsync();
+
+            return entities.Select(_mapper.ToEntity);
+        }
     }
 }

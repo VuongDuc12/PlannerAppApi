@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Ucm.Application.IServices;
 using Ucm.Application.DTOs.StudyPlan;
-using Ucm.Shared.Results;
+using Ucm.Application.IServices;
 using Ucm.Domain.Entities;
+using Ucm.Shared.Results;
 
 namespace Ucm.API.Controllers
 {
@@ -16,165 +16,173 @@ namespace Ucm.API.Controllers
     [Authorize]
     public class StudyPlanController : ControllerBase
     {
-        private readonly IStudyPlanService _studyPlanService;
+        private readonly IStudyPlanService _service;
 
-        public StudyPlanController(IStudyPlanService studyPlanService)
+        public StudyPlanController(IStudyPlanService service)
         {
-            _studyPlanService = studyPlanService;
+            _service = service;
         }
 
-        // Update the GetAll method to map StudyPlan entities to StudyPlanDto
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<Result<IEnumerable<StudyPlan>>>> GetAll()
         {
-            var plans = await _studyPlanService.GetAllAsync();
-            var planDtos = plans.Select(plan => new StudyPlanDto
-            {
-                Id = plan.Id,
-                UserId = plan.UserId,
-                PlanName = plan.PlanName,
-                StartDate = plan.StartDate,
-                EndDate = plan.EndDate,
-                Semester = plan.Semester,
-                AcademicYear = plan.AcademicYear,
-                WeeklyStudyGoalHours = plan.WeeklyStudyGoalHours
-            });
-            return Ok(Result<IEnumerable<StudyPlanDto>>.Ok(planDtos));
+            var result = await _service.GetAllAsync();
+            return Ok(Result<IEnumerable<StudyPlan>>.Ok(result));
         }
 
-        // Update the GetAllByUser method to map StudyPlan entities to StudyPlanDto
-        [HttpGet("user")]
-        public async Task<IActionResult> GetAllByUser()
+        [HttpGet("with-courses")]
+        public async Task<ActionResult<Result<IEnumerable<StudyPlan>>>> GetAllWithCourses()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userId, out var guid))
-                return Unauthorized(Result.Fail("Unauthorized"));
-
-            var plans = await _studyPlanService.GetAllByUserIdAsync(guid);
-            var planDtos = plans.Select(plan => new StudyPlanDto
-            {
-                Id = plan.Id,
-                UserId = plan.UserId,
-                PlanName = plan.PlanName,
-                StartDate = plan.StartDate,
-                EndDate = plan.EndDate,
-                Semester = plan.Semester,
-                AcademicYear = plan.AcademicYear,
-                WeeklyStudyGoalHours = plan.WeeklyStudyGoalHours
-            });
-            return Ok(Result<IEnumerable<StudyPlanDto>>.Ok(planDtos));
+            var result = await _service.GetAllWithCoursesAsync();
+            return Ok(Result<IEnumerable<StudyPlan>>.Ok(result));
         }
 
-        // Fix for CS1503: Map the StudyPlan entity to StudyPlanDto before passing it to Result.Ok
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<ActionResult<Result<StudyPlan>>> GetById(int id)
         {
-            var plan = await _studyPlanService.GetByIdAsync(id);
-            if (plan == null)
-                return NotFound(Result<StudyPlanDto>.Fail("Không tìm thấy kế hoạch"));
-
-            var planDto = new StudyPlanDto
-            {
-                Id = plan.Id,
-                UserId = plan.UserId,
-                PlanName = plan.PlanName,
-                StartDate = plan.StartDate,
-                EndDate = plan.EndDate,
-                Semester = plan.Semester,
-                AcademicYear = plan.AcademicYear,
-                WeeklyStudyGoalHours = plan.WeeklyStudyGoalHours
-            };
-
-            return Ok(Result<StudyPlanDto>.Ok(planDto));
+            var result = await _service.GetByIdAsync(id);
+            if (result == null)
+                return NotFound(Result<StudyPlan>.Fail("Study plan not found"));
+            return Ok(Result<StudyPlan>.Ok(result));
         }
 
-        // Update the Create method to match the IStudyPlanService.CreateAsync signature
+        [HttpGet("user")]
+        public async Task<ActionResult<Result<IEnumerable<StudyPlan>>>> GetByUserId()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized(Result<IEnumerable<StudyPlan>>.Fail("Invalid user token"));
+
+            var result = await _service.GetAllByUserIdAsync(userId);
+            return Ok(Result<IEnumerable<StudyPlan>>.Ok(result));
+        }
+
+        [HttpGet("user/{userId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<Result<IEnumerable<StudyPlan>>>> GetByUserIdForAdmin(string userId)
+        {
+            if (!Guid.TryParse(userId, out var userGuid))
+                return BadRequest(Result<IEnumerable<StudyPlan>>.Fail("Invalid user ID format"));
+
+            var result = await _service.GetAllByUserIdAsync(userGuid);
+            return Ok(Result<IEnumerable<StudyPlan>>.Ok(result));
+        }
+
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] StudyPlanCreateRequest request)
+        public async Task<ActionResult<Result<StudyPlan>>> Create([FromBody] StudyPlanCreateRequest request)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userId, out var guid))
-                return Unauthorized(Result.Fail("Unauthorized"));
+            if (request == null)
+                return BadRequest(Result<StudyPlan>.Fail("Invalid request data"));
 
-            // Map the request to a StudyPlan entity
+            // Lấy userId từ token
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized(Result<StudyPlan>.Fail("Invalid user token"));
+
             var studyPlan = new StudyPlan
             {
-                UserId = guid,
+                UserId = userId,
                 PlanName = request.PlanName,
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
                 Semester = request.Semester,
                 AcademicYear = request.AcademicYear,
-                WeeklyStudyGoalHours = request.WeeklyStudyGoalHours
+                WeeklyStudyGoalHours = request.WeeklyStudyGoalHours,
+                Completed = false
             };
 
-            var created = await _studyPlanService.CreateAsync(studyPlan);
-            if (created == null)
-                return BadRequest(Result.Fail("Tạo kế hoạch thất bại"));
-
-            // Map the created StudyPlan entity to StudyPlanDto
-            var createdDto = new StudyPlanDto
-            {
-                Id = created.Id,
-                UserId = created.UserId,
-                PlanName = created.PlanName,
-                StartDate = created.StartDate,
-                EndDate = created.EndDate,
-                Semester = created.Semester,
-                AcademicYear = created.AcademicYear,
-                WeeklyStudyGoalHours = created.WeeklyStudyGoalHours
-            };
-
-            return Ok(Result<StudyPlanDto>.Ok(createdDto, "Tạo kế hoạch thành công"));
+            var created = await _service.CreateAsync(studyPlan);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, Result<StudyPlan>.Ok(created));
         }
 
-        // Fix for CS1503: Map StudyPlanUpdateRequest to StudyPlan before passing it to _studyPlanService.UpdateAsync
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] StudyPlanUpdateRequest request)
+        public async Task<ActionResult<Result>> Update(int id, [FromBody] StudyPlanUpdateRequest request)
         {
-            if (id != request.Id)
-                return BadRequest(Result.Fail("Id không khớp"));
+            if (request == null || id != request.Id)
+                return BadRequest(Result.Fail("Invalid request data"));
 
-            // Map StudyPlanUpdateRequest to StudyPlan entity
+            var existing = await _service.GetByIdAsync(id);
+            if (existing == null)
+                return NotFound(Result.Fail("Study plan not found"));
+
+            // Kiểm tra quyền sở hữu
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdStr, out var userId) || existing.UserId != userId)
+                return Forbid();
+
             var studyPlan = new StudyPlan
             {
-                Id = request.Id,
+                Id = id,
+                UserId = existing.UserId, // Giữ nguyên userId
                 PlanName = request.PlanName,
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
                 Semester = request.Semester,
                 AcademicYear = request.AcademicYear,
-                WeeklyStudyGoalHours = request.WeeklyStudyGoalHours
+                WeeklyStudyGoalHours = request.WeeklyStudyGoalHours,
+                Completed = request.Completed ?? existing.Completed,
+                PlanCourses = existing.PlanCourses // Giữ nguyên danh sách courses
             };
 
-            var updated = await _studyPlanService.UpdateAsync(studyPlan);
-            if (!updated)
-                return NotFound(Result.Fail("Không tìm thấy kế hoạch"));
+            var success = await _service.UpdateAsync(studyPlan);
+            if (!success)
+                return BadRequest(Result.Fail("Failed to update study plan"));
 
-            // Map updated StudyPlan entity to StudyPlanDto
-            var updatedDto = new StudyPlanDto
-            {
-                Id = studyPlan.Id,
-                UserId = studyPlan.UserId,
-                PlanName = studyPlan.PlanName,
-                StartDate = studyPlan.StartDate,
-                EndDate = studyPlan.EndDate,
-                Semester = studyPlan.Semester,
-                AcademicYear = studyPlan.AcademicYear,
-                WeeklyStudyGoalHours = studyPlan.WeeklyStudyGoalHours
-            };
-
-            return Ok(Result<StudyPlanDto>.Ok(updatedDto, "Cập nhật thành công"));
+            return Ok(Result.Ok("Study plan updated successfully"));
         }
 
-        // DELETE: /api/studyplan/{id}          
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<ActionResult<Result>> Delete(int id)
         {
-            var deleted = await _studyPlanService.DeleteAsync(id);
-            if (!deleted)
-                return NotFound(Result.Fail("Không tìm thấy kế hoạch"));
-            return Ok(Result.Ok("Xoá thành công"));
+            var existing = await _service.GetByIdAsync(id);
+            if (existing == null)
+                return NotFound(Result.Fail("Study plan not found"));
+
+            // Kiểm tra quyền sở hữu
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdStr, out var userId) || existing.UserId != userId)
+                return Forbid();
+
+            var success = await _service.DeleteAsync(id);
+            if (!success)
+                return BadRequest(Result.Fail("Failed to delete study plan"));
+
+            return Ok(Result.Ok("Study plan deleted successfully"));
+        }
+
+        [HttpGet("test/{id}")]
+        public async Task<ActionResult<Result<StudyPlan>>> TestGetById(int id)
+        {
+            var result = await _service.GetByIdAsync(id);
+            if (result == null)
+                return NotFound(Result<StudyPlan>.Fail("Study plan not found"));
+            
+            // Debug info
+            System.Diagnostics.Debug.WriteLine($"API: StudyPlan {id} - PlanCourses: {(result.PlanCourses != null ? result.PlanCourses.Count : 0)}");
+            
+            return Ok(Result<StudyPlan>.Ok(result));
+        }
+
+        [HttpGet("user-summary")]
+        public async Task<ActionResult<Result<StudyPlanUserSummaryDto>>> GetUserSummary()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized(Result<StudyPlanUserSummaryDto>.Fail("Invalid user token"));
+
+            var result = await _service.GetUserSummaryAsync(userId);
+            if (result == null)
+                return NotFound(Result<StudyPlanUserSummaryDto>.Fail("User not found"));
+
+            return Ok(Result<StudyPlanUserSummaryDto>.Ok(result));
+        }
+
+        [HttpGet("admin-summary")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<Result<StudyPlanAdminSummaryDto>>> GetAdminSummary()
+        {
+            var result = await _service.GetAdminSummaryAsync();
+            return Ok(Result<StudyPlanAdminSummaryDto>.Ok(result));
         }
     }
-}
+} 
