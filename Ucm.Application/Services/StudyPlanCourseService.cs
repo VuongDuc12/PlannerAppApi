@@ -11,10 +11,14 @@ namespace Ucm.Application.Services
     public class StudyPlanCourseService : IStudyPlanCourseService
     {
         private readonly IStudyPlanCourseRepository _repository;
+        private readonly IStudyPlanService _studyPlanService;
+        private readonly IStudyPlanRepository _studyPlanRepository;
 
-        public StudyPlanCourseService(IStudyPlanCourseRepository repository)
+        public StudyPlanCourseService(IStudyPlanCourseRepository repository, IStudyPlanService studyPlanService, IStudyPlanRepository studyPlanRepository)
         {
             _repository = repository;
+            _studyPlanService = studyPlanService;
+            _studyPlanRepository = studyPlanRepository;
         }
 
         public async Task<IEnumerable<StudyPlanCourseDto>> GetAllAsync()
@@ -35,6 +39,10 @@ namespace Ucm.Application.Services
             var entity = MapToEntity(dto);
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();
+            
+            // Cập nhật CourseCount trong StudyPlan
+            await UpdateStudyPlanCourseCount(dto.StudyPlanId);
+            
             return MapToDto(entity);
         }
 
@@ -51,8 +59,14 @@ namespace Ucm.Application.Services
         {
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null) throw new System.Exception($"Không tìm thấy StudyPlanCourse với id {id} để xóa.");
+            
+            var studyPlanId = entity.StudyPlanId; // Lưu lại StudyPlanId trước khi xóa
+            
             _repository.Delete(entity);
             await _repository.SaveChangesAsync();
+            
+            // Cập nhật CourseCount trong StudyPlan
+            await UpdateStudyPlanCourseCount(studyPlanId);
         }
 
         public async Task<IEnumerable<StudyPlanCourseDto>> GetByUserIdAsync(Guid userId)
@@ -65,6 +79,22 @@ namespace Ucm.Application.Services
         {
             var entities = await _repository.GetByStudyPlanIdAsync(studyPlanId);
             return entities.Select(MapToDto);
+        }
+
+        // Helper method để cập nhật CourseCount
+        private async Task UpdateStudyPlanCourseCount(int studyPlanId)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"Updating CourseCount for StudyPlan {studyPlanId}");
+                var result = await _studyPlanService.UpdateCourseCountAsync(studyPlanId);
+                System.Diagnostics.Debug.WriteLine($"UpdateCourseCount result: {result}");
+            }
+            catch (System.Exception ex)
+            {
+                // Log lỗi nhưng không throw để không ảnh hưởng đến operation chính
+                System.Diagnostics.Debug.WriteLine($"Error updating CourseCount for StudyPlan {studyPlanId}: {ex.Message}");
+            }
         }
 
         // Mapping helpers

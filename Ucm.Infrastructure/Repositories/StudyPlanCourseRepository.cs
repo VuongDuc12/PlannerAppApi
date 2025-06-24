@@ -34,5 +34,11 @@ namespace Ucm.Infrastructure.Repositories
                 .ToListAsync();
             return efItems.Select(_mapper.ToEntity);
         }
+
+        public async Task<int> CountByStudyPlanIdAsync(int studyPlanId)
+        {
+            return await _context.StudyPlanCourses
+                .CountAsync(spc => spc.StudyPlanId == studyPlanId);
+        }
     }
 }

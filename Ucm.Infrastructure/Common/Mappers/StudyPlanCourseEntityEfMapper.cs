@@ -7,6 +7,7 @@ namespace Ucm.Infrastructure.Common.Mappers
     public class StudyPlanCourseEntityEfMapper : IEntityEfMapper<StudyPlanCourse, StudyPlanCourseEf>
     {
         private readonly StudyTaskEntityEfMapper _taskMapper = new();
+        private readonly CourseEntityEfMapper _courseMapper = new();
 
         public StudyPlanCourse ToEntity(StudyPlanCourseEf ef)
         {
@@ -18,6 +19,7 @@ namespace Ucm.Infrastructure.Common.Mappers
                 StudyPlanId = ef.StudyPlanId,
                 CourseId = ef.CourseId,
                 UserId = ef.UserId,
+                Course = ef.Course != null ? _courseMapper.ToEntity(ef.Course) : null,
                 Tasks = ef.Tasks?.Select(_taskMapper.ToEntity).ToList()
             };
         }
@@ -32,6 +34,7 @@ namespace Ucm.Infrastructure.Common.Mappers
                 StudyPlanId = entity.StudyPlanId,
                 CourseId = entity.CourseId,
                 UserId = entity.UserId,
+                Course = entity.Course != null ? _courseMapper.ToEf(entity.Course) : null,
                 Tasks = entity.Tasks?.Select(_taskMapper.ToEf).ToList()
             };
         }

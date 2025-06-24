@@ -9,5 +9,6 @@ namespace Ucm.Domain.IRepositories
     {
         Task<IEnumerable<StudyPlanCourse>> GetByUserIdAsync(Guid userId);
         Task<IEnumerable<StudyPlanCourse>> GetByStudyPlanIdAsync(int studyPlanId);
+        Task<int> CountByStudyPlanIdAsync(int studyPlanId);
     }
 }

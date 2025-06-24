@@ -22,6 +22,8 @@ namespace Ucm.Infrastructure.Common.Mappers
                 Semester = ef.Semester,
                 AcademicYear = ef.AcademicYear,
                 WeeklyStudyGoalHours = ef.WeeklyStudyGoalHours,
+                CourseCount = ef.CourseCount,
+                Completed = ef.Completed,
                 PlanCourses = ef.PlanCourses?.Select(_planCourseMapper.ToEntity).ToList()
             };
         }
@@ -40,6 +42,8 @@ namespace Ucm.Infrastructure.Common.Mappers
                 Semester = entity.Semester,
                 AcademicYear = entity.AcademicYear,
                 WeeklyStudyGoalHours = entity.WeeklyStudyGoalHours,
+                CourseCount = entity.CourseCount,
+                Completed = entity.Completed,
                 PlanCourses = entity.PlanCourses?.Select(_planCourseMapper.ToEf).ToList()
             };
         }

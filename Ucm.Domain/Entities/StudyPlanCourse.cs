@@ -9,6 +9,9 @@ namespace Ucm.Domain.Entities
         public int StudyPlanId { get; set; }
         public int CourseId { get; set; }
         public Guid UserId { get; set; }
+        
+        // Navigation properties
+        public Course Course { get; set; }
         public ICollection<StudyTask> Tasks { get; set; }
     }
 }

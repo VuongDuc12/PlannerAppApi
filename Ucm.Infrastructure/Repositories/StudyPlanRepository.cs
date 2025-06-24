@@ -35,6 +35,26 @@ namespace Ucm.Infrastructure.Repositories
                 .ToListAsync();
             return efItems.Select(_mapper.ToEntity);
         }
+
+        public async Task<StudyPlan> GetByIdWithCoursesAsync(int id)
+        {
+            var studyPlanEf = await _context.StudyPlans
+                .Include(sp => sp.PlanCourses)
+                    .ThenInclude(spc => spc.Course)
+                .FirstOrDefaultAsync(sp => sp.Id == id);
+
+            return studyPlanEf != null ? _mapper.ToEntity(studyPlanEf) : null;
+        }
+
+        public async Task<bool> UpdateCourseCountOnlyAsync(int studyPlanId, int courseCount)
+        {
+            var studyPlanEf = await _context.StudyPlans.FindAsync(studyPlanId);
+            if (studyPlanEf == null) return false;
+            
+            studyPlanEf.CourseCount = courseCount;
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 
 }
