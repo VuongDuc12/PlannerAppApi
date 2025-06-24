@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useParams, useLocation, Link, useNavigate } from 'react-router-dom';
 import { getStudyPlanById } from '../../api/authApi';
 import { AdminPageContext } from '../../layouts/AdminLayout';
-import { FiCalendar, FiClock, FiBookOpen, FiCheckCircle, FiXCircle, FiArrowLeft, FiEdit, FiTrash2, FiPlus } from 'react-icons/fi';
+import { FiCalendar, FiClock, FiBookOpen, FiCheckCircle, FiXCircle, FiArrowLeft, FiEdit, FiTrash2, FiPlus, FiUser } from 'react-icons/fi';
 
 interface Course {
   id: number;
@@ -35,6 +35,13 @@ interface StudyPlan {
   planCourses: PlanCourse[];
 }
 
+interface User {
+  userId: string;
+  email: string;
+  fullName: string;
+  role: string;
+}
+
 const StudyPlanDetailPage = () => {
   const { planId } = useParams();
   const location = useLocation();
@@ -42,6 +49,9 @@ const StudyPlanDetailPage = () => {
   const [plan, setPlan] = useState<StudyPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const { setTitle, setDescription } = useContext(AdminPageContext);
+  
+  // Get user info from location state
+  const user = location.state?.user as User;
 
   useEffect(() => {
     if (planId) {
@@ -49,7 +59,7 @@ const StudyPlanDetailPage = () => {
         .then(res => {
           setPlan(res.data.data);
           setTitle && setTitle(`Chi tiết kế hoạch: ${res.data.data.planName}`);
-          setDescription && setDescription('Thông tin chi tiết kế hoạch học tập');
+          setDescription && setDescription(`Thông tin chi tiết kế hoạch học tập của ${user?.fullName || 'sinh viên'}`);
           setLoading(false);
         })
         .catch(error => {
@@ -57,7 +67,7 @@ const StudyPlanDetailPage = () => {
           setLoading(false);
         });
     }
-  }, [planId]);
+  }, [planId, user]);
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('vi-VN', {
@@ -83,6 +93,16 @@ const StudyPlanDetailPage = () => {
     return Math.round((completedCourses.length / plan.planCourses.length) * 100);
   };
 
+  const handleBackNavigation = () => {
+    if (user) {
+      // Navigate back to user's study plan list
+      navigate(`/admin/studyplans/user/${user.userId}`, { state: { user } });
+    } else {
+      // Fallback to general study plans page
+      navigate('/admin/studyplans');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
@@ -97,9 +117,12 @@ const StudyPlanDetailPage = () => {
         <FiXCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy kế hoạch</h3>
         <p className="text-gray-500 mb-4">Kế hoạch học tập này không tồn tại hoặc đã bị xóa.</p>
-        <Link to="/admin/studyplans" className="text-indigo-600 hover:text-indigo-500">
+        <button 
+          onClick={handleBackNavigation}
+          className="text-indigo-600 hover:text-indigo-500"
+        >
           Quay lại danh sách kế hoạch
-        </Link>
+        </button>
       </div>
     );
   }
@@ -109,13 +132,13 @@ const StudyPlanDetailPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Link 
-            to={-1 as any} 
+          <button 
+            onClick={handleBackNavigation}
             className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-700 transition-colors"
           >
             <FiArrowLeft size={20} />
             <span>Quay lại</span>
-          </Link>
+          </button>
           <div className="h-6 w-px bg-gray-300"></div>
           <h1 className="text-2xl font-bold text-gray-900">{plan.planName}</h1>
         </div>
@@ -130,6 +153,22 @@ const StudyPlanDetailPage = () => {
           </button>
         </div>
       </div>
+
+      {/* User Info Card */}
+      {user && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="flex items-center space-x-3">
+            <FiUser className="h-5 w-5 text-gray-500" />
+            <div>
+              <p className="text-sm font-medium text-gray-900">{user.fullName}</p>
+              <p className="text-sm text-gray-500">{user.email}</p>
+            </div>
+            <span className="ml-auto text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+              {user.role}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Plan Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -301,8 +340,17 @@ const StudyPlanDetailPage = () => {
                 <div 
                   key={planCourse.id}
                   className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => navigate(`/admin/studyplans/${plan.id}/courses/${planCourse.courseId}`, { 
-                    state: { planCourse, plan } 
+                  onClick={() => navigate(`/admin/studyplans/plan/${plan.id}/courses/${planCourse.courseId}`, { 
+                    state: { 
+                      planCourse: {
+                        id: planCourse.id,
+                        studyPlanId: planCourse.studyPlanId,
+                        courseId: planCourse.courseId,
+                        course: planCourse.course
+                      }, 
+                      plan,
+                      user 
+                    } 
                   })}
                 >
                   <div className="flex items-start justify-between mb-3">
@@ -375,7 +423,7 @@ const StudyPlanDetailPage = () => {
           
           <div className="mt-6 text-center">
             <button 
-              onClick={() => navigate(`/admin/studyplans/${plan.id}/tasks`, { state: { plan } })}
+              onClick={() => navigate(`/admin/studyplans/plan/${plan.id}/tasks`, { state: { plan } })}
               className="inline-flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
             >
               <FiCheckCircle size={16} />

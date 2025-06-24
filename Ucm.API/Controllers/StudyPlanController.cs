@@ -57,6 +57,17 @@ namespace Ucm.API.Controllers
             return Ok(Result<IEnumerable<StudyPlan>>.Ok(result));
         }
 
+        [HttpGet("user/{userId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<Result<IEnumerable<StudyPlan>>>> GetByUserIdForAdmin(string userId)
+        {
+            if (!Guid.TryParse(userId, out var userGuid))
+                return BadRequest(Result<IEnumerable<StudyPlan>>.Fail("Invalid user ID format"));
+
+            var result = await _service.GetAllByUserIdAsync(userGuid);
+            return Ok(Result<IEnumerable<StudyPlan>>.Ok(result));
+        }
+
         [HttpPost]
         public async Task<ActionResult<Result<StudyPlan>>> Create([FromBody] StudyPlanCreateRequest request)
         {

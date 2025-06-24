@@ -102,4 +102,6 @@ export const getStudyPlanById = (planId: number) => api.get(`/StudyPlan/${planId
 export const getCoursesByPlan = (planId: number) =>
   api.get(`/StudyPlanCourse/plan/${planId}`);
 export const getTasksByPlan = (planId: number) =>
-  api.get(`/StudyTask/plan/${planId}`); 
+  api.get(`/StudyTask/plan/${planId}`);
+export const getTasksByPlanCourse = (planCourseId: number) =>
+  api.get(`/StudyTask/plan-course/${planCourseId}`); 

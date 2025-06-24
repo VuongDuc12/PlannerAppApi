@@ -2,20 +2,8 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getStudyPlanAdminSummary } from '../../api/authApi';
 import { AdminPageContext } from '../../layouts/AdminLayout';
-import { FiEye, FiCalendar, FiBookOpen, FiCheckCircle, FiUser, FiClock, FiTrendingUp } from 'react-icons/fi';
+import { FiEye, FiUser, FiBookOpen, FiCheckCircle, FiClock, FiTrendingUp, FiSearch } from 'react-icons/fi';
 import toast from 'react-hot-toast';
-
-interface StudyPlanSummary {
-  id: number;
-  planName: string;
-  startDate: string;
-  endDate: string;
-  semester: string;
-  academicYear: string;
-  courseCount: number | null;
-  completed: boolean | null;
-  status: string;
-}
 
 interface UserPlanSummary {
   userId: string;
@@ -25,7 +13,6 @@ interface UserPlanSummary {
   activePlans: number;
   completedPlans: number;
   pendingPlans: number;
-  plans: StudyPlanSummary[];
 }
 
 interface StudyPlanAdminSummary {
@@ -47,7 +34,7 @@ const StudyPlanAdminPage = () => {
 
   useEffect(() => {
     setTitle && setTitle('Quản lý kế hoạch học tập');
-    setDescription && setDescription('Thống kê và xem danh sách kế hoạch học tập của sinh viên');
+    setDescription && setDescription('Thống kê và danh sách sinh viên có kế hoạch học tập');
   }, []);
 
   useEffect(() => {
@@ -67,29 +54,15 @@ const StudyPlanAdminPage = () => {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
   const handleViewUserPlans = (user: UserPlanSummary) => {
     navigate(`/admin/studyplans/user/${user.userId}`, { 
       state: { 
         user: {
-          id: user.userId,
-          name: user.userName,
+          userId: user.userId,
+          fullName: user.userName,
           email: user.userEmail
         }
       } 
-    });
-  };
-
-  const handleViewPlanDetail = (plan: StudyPlanSummary) => {
-    navigate(`/admin/studyplans/${plan.id}/detail`, { 
-      state: { plan } 
     });
   };
 
@@ -99,9 +72,9 @@ const StudyPlanAdminPage = () => {
                          user.userEmail.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = filterStatus === 'all' ||
-                         (filterStatus === 'completed' && user.completedPlans > 0) ||
-                         (filterStatus === 'active' && user.activePlans > 0) ||
-                         (filterStatus === 'pending' && user.pendingPlans > 0);
+                         (filterStatus === 'completed' && (user.completedPlans || 0) > 0) ||
+                         (filterStatus === 'active' && (user.activePlans || 0) > 0) ||
+                         (filterStatus === 'pending' && (user.pendingPlans || 0) > 0);
     
     return matchesSearch && matchesStatus;
   }) || [];
@@ -180,13 +153,16 @@ const StudyPlanAdminPage = () => {
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-1">Tìm kiếm sinh viên</label>
-            <input
-              type="text"
-              placeholder="Tìm theo tên hoặc email sinh viên..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            />
+            <div className="relative">
+              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <input
+                type="text"
+                placeholder="Tìm theo tên hoặc email sinh viên..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
           </div>
           <div className="sm:w-48">
             <label className="block text-sm font-medium text-gray-700 mb-1">Lọc theo trạng thái</label>
@@ -195,7 +171,7 @@ const StudyPlanAdminPage = () => {
               onChange={(e) => setFilterStatus(e.target.value as any)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option value="all">Tất cả</option>
+              <option value="all">Tất cả sinh viên</option>
               <option value="active">Có kế hoạch đang học</option>
               <option value="completed">Có kế hoạch hoàn thành</option>
               <option value="pending">Có kế hoạch chờ bắt đầu</option>
@@ -204,116 +180,85 @@ const StudyPlanAdminPage = () => {
         </div>
       </div>
 
-      {/* Users List */}
-      <div className="space-y-4">
+      {/* Users Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900">Danh sách sinh viên</h3>
+        </div>
+        
         {filteredUsers.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="text-center py-12">
             <FiUser className="mx-auto h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy sinh viên nào</h3>
             <p className="text-gray-500">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.</p>
           </div>
         ) : (
-          filteredUsers.map((user) => (
-            <div key={user.userId} className="bg-white rounded-xl shadow-sm border border-gray-200">
-              {/* User Header */}
-              <div className="p-4 border-b border-gray-200 bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-indigo-100 rounded-full">
-                      <FiUser className="h-5 w-5 text-indigo-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{user.userName}</h3>
-                      <p className="text-sm text-gray-600">{user.userEmail}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleViewUserPlans(user)}
-                    className="flex items-center space-x-2 px-3 py-1 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
-                  >
-                    <FiEye size={14} />
-                    <span>Xem tất cả kế hoạch</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* User Statistics */}
-              <div className="p-4 border-b border-gray-200">
-                <div className="grid grid-cols-4 gap-4 text-center">
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">{user.totalPlans}</p>
-                    <p className="text-xs text-gray-600">Tổng kế hoạch</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-yellow-600">{user.activePlans}</p>
-                    <p className="text-xs text-gray-600">Đang học</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-green-600">{user.completedPlans}</p>
-                    <p className="text-xs text-gray-600">Hoàn thành</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-purple-600">{user.pendingPlans}</p>
-                    <p className="text-xs text-gray-600">Chờ bắt đầu</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Recent Plans */}
-              <div className="p-4">
-                <h4 className="font-medium text-gray-900 mb-3">Kế hoạch gần đây</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {user.plans.slice(0, 6).map((plan) => (
-                    <div key={plan.id} className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
-                      <div className="flex items-start justify-between mb-2">
-                        <h5 className="font-medium text-gray-900 text-sm line-clamp-2 flex-1 mr-2">
-                          {plan.planName}
-                        </h5>
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          plan.status === 'Completed' 
-                            ? 'bg-green-100 text-green-700' 
-                            : plan.status === 'Active'
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-purple-100 text-purple-700'
-                        }`}>
-                          {plan.status === 'Completed' ? 'Hoàn thành' : 
-                           plan.status === 'Active' ? 'Đang học' : 'Chờ bắt đầu'}
-                        </span>
-                      </div>
-                      
-                      <div className="space-y-1 text-xs text-gray-600 mb-2">
-                        <div className="flex items-center space-x-1">
-                          <FiCalendar className="h-3 w-3" />
-                          <span>{formatDate(plan.startDate)} - {formatDate(plan.endDate)}</span>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Sinh viên
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tổng kế hoạch
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Đang học
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Hoàn thành
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Chờ bắt đầu
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Hành động
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredUsers.map((user) => (
+                  <tr key={user.userId} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                            <FiUser className="h-5 w-5 text-indigo-600" />
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-1">
-                          <FiBookOpen className="h-3 w-3" />
-                          <span>{plan.courseCount || 0} môn học</span>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{user.userName}</div>
+                          <div className="text-sm text-gray-500">{user.userEmail}</div>
                         </div>
                       </div>
-
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-semibold text-gray-900">{user.totalPlans || 0}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-semibold text-yellow-600">{user.activePlans || 0}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-semibold text-green-600">{user.completedPlans || 0}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-semibold text-purple-600">{user.pendingPlans || 0}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
-                        onClick={() => handleViewPlanDetail(plan)}
-                        className="w-full text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+                        onClick={() => handleViewUserPlans(user)}
+                        className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-900"
                       >
-                        Xem chi tiết →
+                        <FiEye size={14} />
+                        <span>Xem kế hoạch</span>
                       </button>
-                    </div>
-                  ))}
-                </div>
-                {user.plans.length > 6 && (
-                  <div className="text-center mt-3">
-                    <button
-                      onClick={() => handleViewUserPlans(user)}
-                      className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
-                    >
-                      Xem tất cả {user.plans.length} kế hoạch
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

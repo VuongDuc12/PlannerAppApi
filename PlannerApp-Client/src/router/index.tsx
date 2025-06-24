@@ -15,6 +15,7 @@ import StudyPlanListPage from '../pages/admin/StudyPlanListPage';
 import StudyPlanDetailPage from '../pages/admin/StudyPlanDetailPage';
 import StudyPlanTasksPage from '../pages/admin/StudyPlanTasksPage';
 import StudyPlanCoursesPage from '../pages/admin/StudyPlanCoursesPage';
+import StudyPlanCourseDetailPage from '../pages/admin/StudyPlanCourseDetailPage';
 
 
 const router = createBrowserRouter([
@@ -39,10 +40,11 @@ const router = createBrowserRouter([
           { path: 'topics', element: <TopicsPage /> },
           { path: 'plan-templates', element: <PlanTemplatesPage /> },
           { path: 'studyplans', element: <StudyPlanAdminPage /> },
-          { path: 'studyplans/:userId', element: <StudyPlanListPage /> },
-          { path: 'studyplans/:planId/detail', element: <StudyPlanDetailPage /> },
-          { path: 'studyplans/:planId/tasks', element: <StudyPlanTasksPage /> },
-          { path: 'studyplans/:planId/courses', element: <StudyPlanCoursesPage /> },
+          { path: 'studyplans/user/:userId', element: <StudyPlanListPage /> },
+          { path: 'studyplans/plan/:planId/detail', element: <StudyPlanDetailPage /> },
+          { path: 'studyplans/plan/:planId/tasks', element: <StudyPlanTasksPage /> },
+          { path: 'studyplans/plan/:planId/courses', element: <StudyPlanCoursesPage /> },
+          { path: 'studyplans/plan/:planId/courses/:courseId', element: <StudyPlanCourseDetailPage /> },
         ]
       }
     ]
