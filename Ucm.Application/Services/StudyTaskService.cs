@@ -16,159 +16,429 @@ namespace Ucm.Application.Services
         private readonly IStudyPlanCourseRepository _studyPlanCourseRepository;
         private readonly IStudyPlanRepository _studyPlanRepository;
         private readonly ICourseRepository _courseRepository;
+        private readonly ICourseTopicRepository _courseTopicRepository;
 
         public StudyTaskService(
             IStudyTaskRepository repository,
             IStudyPlanCourseRepository studyPlanCourseRepository,
             IStudyPlanRepository studyPlanRepository,
-            ICourseRepository courseRepository)
+            ICourseRepository courseRepository,
+            ICourseTopicRepository courseTopicRepository)
         {
             _repository = repository;
             _studyPlanCourseRepository = studyPlanCourseRepository;
             _studyPlanRepository = studyPlanRepository;
             _courseRepository = courseRepository;
+            _courseTopicRepository = courseTopicRepository;
         }
 
         private async Task<StudyTaskDto> MapToDtoWithDetails(StudyTask task)
         {
-            var planCourse = await _studyPlanCourseRepository.GetByIdAsync(task.PlanCourseId);
-            var studyPlan = planCourse != null ? await _studyPlanRepository.GetByIdAsync(planCourse.StudyPlanId) : null;
-            var course = planCourse != null ? await _courseRepository.GetByIdAsync(planCourse.CourseId) : null;
-
-            return new StudyTaskDto
+            try
             {
-                Id = task.Id,
-                PlanCourseId = task.PlanCourseId,
-                StudyPlanId = studyPlan?.Id ?? 0,
-                StudyPlanName = studyPlan?.PlanName,
-                CourseId = course?.Id ?? 0,
-                CourseName = course?.CourseName,
-                CourseTopicId = task.CourseTopicId,
-                TaskName = task.TaskName,
-                TaskDescription = task.TaskDescription,
-                EstimatedHours = task.EstimatedHours,
-                DueDate = task.DueDate,
-                ScheduledDate = task.ScheduledDate,
-                Status = task.Status,
-                CompletionDate = task.CompletionDate,
-                Logs = task.Logs?.Select(log => new StudyLogDto
+                Console.WriteLine($"Mapping task ID: {task?.Id}");
+                Console.WriteLine($"Task PlanCourseId: {task?.PlanCourseId}");
+                Console.WriteLine($"Task PlanCourse: {task?.PlanCourse != null}");
+                Console.WriteLine($"Task PlanCourse.StudyPlan: {task?.PlanCourse?.StudyPlan != null}");
+                Console.WriteLine($"Task PlanCourse.Course: {task?.PlanCourse?.Course != null}");
+
+                // Since repository now loads related data, we can use it directly
+                return new StudyTaskDto
                 {
-                    Id = log.Id,
-                    TaskId = log.TaskId,
-                    ActualTimeSpent = log.ActualTimeSpent,
-                    LogDate = log.LogDate
-                }).ToList(),
-                Resources = task.Resources?.Select(res => new TaskResourceDto
-                {
-                    Id = res.Id,
-                    TaskId = res.TaskId,
-                    ResourceType = res.ResourceType,
-                    ResourceURL = res.ResourceURL
-                }).ToList()
-            };
+                    Id = task.Id,
+                    PlanCourseId = task.PlanCourseId,
+                    StudyPlanId = task.PlanCourse?.StudyPlan?.Id ?? 0,
+                    StudyPlanName = task.PlanCourse?.StudyPlan?.PlanName ?? "Unknown",
+                    CourseId = task.PlanCourse?.Course?.Id ?? 0,
+                    CourseName = task.PlanCourse?.Course?.CourseName ?? "Unknown",
+                    CourseTopicId = task.CourseTopicId,
+                    TaskName = task.TaskName ?? "",
+                    TaskDescription = task.TaskDescription ?? "",
+                    EstimatedHours = task.EstimatedHours,
+                    DueDate = task.DueDate,
+                    ScheduledDate = task.ScheduledDate,
+                    Status = task.Status ?? "Unknown",
+                    CompletionDate = task.CompletionDate,
+                    Logs = task.Logs?.Select(log => new StudyLogDto
+                    {
+                        Id = log.Id,
+                        TaskId = log.TaskId,
+                        ActualTimeSpent = log.ActualTimeSpent,
+                        LogDate = log.LogDate
+                    }).ToList() ?? new List<StudyLogDto>(),
+                    Resources = task.Resources?.Select(res => new TaskResourceDto
+                    {
+                        Id = res.Id,
+                        TaskId = res.TaskId,
+                        ResourceType = res.ResourceType,
+                        ResourceURL = res.ResourceURL
+                    }).ToList() ?? new List<TaskResourceDto>()
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in MapToDtoWithDetails: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
         }
 
         public async Task<IEnumerable<StudyTaskDto>> GetAllAsync()
         {
-            var entities = await _repository.GetAllAsync();
-            var dtos = new List<StudyTaskDto>();
-            foreach (var entity in entities)
+            try
             {
-                dtos.Add(await MapToDtoWithDetails(entity));
+                var entities = await _repository.GetAllAsync();
+                var dtos = new List<StudyTaskDto>();
+                foreach (var entity in entities)
+                {
+                    dtos.Add(await MapToDtoWithDetails(entity));
+                }
+                return dtos;
             }
-            return dtos;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetAllAsync: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<StudyTaskDto> GetByIdAsync(int id)
         {
-            var entity = await _repository.GetByIdAsync(id);
-            return entity == null ? null : await MapToDtoWithDetails(entity);
+            try
+            {
+                Console.WriteLine($"Getting task by ID: {id}");
+                var entity = await _repository.GetByIdAsync(id);
+                Console.WriteLine($"Entity found: {entity != null}");
+                return entity == null ? null : await MapToDtoWithDetails(entity);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetByIdAsync: {ex.Message}");
+                throw;
+            }
         }
 
-        public async Task<StudyTaskDto> AddAsync(StudyTaskDto dto)
+        public async Task<StudyTaskDto> AddAsync(CreateStudyTaskRequest request)
         {
-            var entity = MapToEntity(dto);
-            await _repository.AddAsync(entity);
-            await _repository.SaveChangesAsync();
-            return await GetByIdAsync(entity.Id);
+            try
+            {
+                Console.WriteLine($"Adding task with PlanCourseId: {request.PlanCourseId}");
+                Console.WriteLine($"Request CourseTopicId: {request.CourseTopicId}");
+
+                // Validate PlanCourseId belongs to current user
+                var planCourse = await _studyPlanCourseRepository.GetByIdAsync(request.PlanCourseId);
+                Console.WriteLine($"PlanCourse found: {planCourse != null}");
+                
+                if (planCourse == null)
+                    throw new ArgumentException("Invalid PlanCourseId - PlanCourse not found");
+
+                // Validate CourseTopicId if provided
+                int? courseTopicId = null;
+                if (request.CourseTopicId.HasValue && request.CourseTopicId.Value > 0)
+                {
+                    Console.WriteLine($"Validating CourseTopicId: {request.CourseTopicId.Value}");
+                    var courseTopic = await _courseTopicRepository.GetByIdAsync(request.CourseTopicId.Value);
+                    Console.WriteLine($"CourseTopic found: {courseTopic != null}");
+                    
+                    if (courseTopic == null)
+                        throw new ArgumentException($"Invalid CourseTopicId - CourseTopic with ID {request.CourseTopicId.Value} not found");
+                    courseTopicId = request.CourseTopicId.Value;
+                }
+
+                var entity = new StudyTask
+                {
+                    PlanCourseId = request.PlanCourseId,
+                    CourseTopicId = courseTopicId, // Use validated courseTopicId
+                    TaskName = request.TaskName,
+                    TaskDescription = request.TaskDescription,
+                    EstimatedHours = request.EstimatedHours,
+                    DueDate = request.DueDate,
+                    ScheduledDate = request.ScheduledDate,
+                    Status = request.Status ?? "ToDo" // Default status
+                };
+
+                Console.WriteLine($"Creating entity with PlanCourseId: {entity.PlanCourseId}");
+                await _repository.AddAsync(entity);
+                Console.WriteLine($"Entity added, saving changes...");
+                await _repository.SaveChangesAsync();
+                Console.WriteLine($"Changes saved, getting created entity by unique fields...");
+
+                // Lấy lại task vừa tạo bằng các trường duy nhất
+                var createdEntity = (await _repository.GetByDateAsync(
+                    planCourse.UserId,
+                    request.ScheduledDate.HasValue ? request.ScheduledDate.Value.ToDateTime(TimeOnly.MinValue) : DateTime.Today
+                )).LastOrDefault(x =>
+                    x.PlanCourseId == request.PlanCourseId &&
+                    x.TaskName == request.TaskName &&
+                    x.DueDate == request.DueDate
+                );
+
+                if (createdEntity == null)
+                    throw new Exception("Task was saved but could not be loaded from DB (query fallback).");
+
+                return await MapToDtoWithDetails(createdEntity);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in AddAsync: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
         }
         
-        public async Task UpdateAsync(StudyTaskDto dto)
+        public async Task UpdateAsync(int id, UpdateStudyTaskRequest request)
         {
-            var entity = MapToEntity(dto);
-            _repository.Update(entity);
-            await _repository.SaveChangesAsync();
+            try
+            {
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
+                    throw new ArgumentException("Task not found");
+
+                // Validate CourseTopicId if provided
+                if (request.CourseTopicId.HasValue && request.CourseTopicId.Value > 0)
+                {
+                    var courseTopic = await _courseTopicRepository.GetByIdAsync(request.CourseTopicId.Value);
+                    if (courseTopic == null)
+                        throw new ArgumentException($"Invalid CourseTopicId - CourseTopic with ID {request.CourseTopicId.Value} not found");
+                    entity.CourseTopicId = request.CourseTopicId.Value;
+                }
+                else if (request.CourseTopicId.HasValue && request.CourseTopicId.Value == 0)
+                {
+                    // Set to null if explicitly set to 0
+                    entity.CourseTopicId = null;
+                }
+
+                // Chỉ cập nhật những trường được cung cấp
+                if (!string.IsNullOrEmpty(request.TaskName))
+                    entity.TaskName = request.TaskName;
+                
+                if (!string.IsNullOrEmpty(request.TaskDescription))
+                    entity.TaskDescription = request.TaskDescription;
+                
+                if (request.EstimatedHours.HasValue)
+                    entity.EstimatedHours = request.EstimatedHours;
+                
+                if (request.DueDate.HasValue)
+                    entity.DueDate = request.DueDate;
+                
+                if (request.ScheduledDate.HasValue)
+                    entity.ScheduledDate = request.ScheduledDate;
+                
+                if (!string.IsNullOrEmpty(request.Status))
+                    entity.Status = request.Status;
+                
+                if (request.CompletionDate.HasValue)
+                    entity.CompletionDate = request.CompletionDate;
+
+                _repository.Update(entity);
+                await _repository.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in UpdateAsync: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task DeleteAsync(int id)
         {
-            var entity = await _repository.GetByIdAsync(id);
-            if (entity == null) return;
-            _repository.Delete(entity);
-            await _repository.SaveChangesAsync();
+            try
+            {
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null) return;
+                _repository.Delete(entity);
+                await _repository.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in DeleteAsync: {ex.Message}");
+                throw;
+            }
         }
 
+        // Mobile app specific methods
         public async Task<IEnumerable<StudyTaskDto>> GetByDateAsync(Guid userId, DateTime date)
         {
-            var entities = await _repository.GetByDateAsync(userId, date);
-            var dtos = new List<StudyTaskDto>();
-            foreach (var entity in entities)
+            try
             {
-                dtos.Add(await MapToDtoWithDetails(entity));
+                var entities = await _repository.GetByDateAsync(userId, date);
+                var dtos = new List<StudyTaskDto>();
+                foreach (var entity in entities)
+                {
+                    dtos.Add(await MapToDtoWithDetails(entity));
+                }
+                return dtos;
             }
-            return dtos;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetByDateAsync: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<StudyTaskDto>> GetByDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                var entities = await _repository.GetByDateRangeAsync(userId, startDate, endDate);
+                var dtos = new List<StudyTaskDto>();
+                foreach (var entity in entities)
+                {
+                    dtos.Add(await MapToDtoWithDetails(entity));
+                }
+                return dtos;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetByDateRangeAsync: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<StudyTaskDto>> GetByWeekAsync(Guid userId, DateTime weekStart)
+        {
+            try
+            {
+                var entities = await _repository.GetByWeekAsync(userId, weekStart);
+                var dtos = new List<StudyTaskDto>();
+                foreach (var entity in entities)
+                {
+                    dtos.Add(await MapToDtoWithDetails(entity));
+                }
+                return dtos;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetByWeekAsync: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<StudyTaskDto>> GetByMonthAsync(Guid userId, int year, int month)
+        {
+            try
+            {
+                var entities = await _repository.GetByMonthAsync(userId, year, month);
+                var dtos = new List<StudyTaskDto>();
+                foreach (var entity in entities)
+                {
+                    dtos.Add(await MapToDtoWithDetails(entity));
+                }
+                return dtos;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetByMonthAsync: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<IEnumerable<StudyTaskDto>> GetByStudyPlanIdAsync(Guid userId, int studyPlanId)
         {
-            var entities = await _repository.GetByStudyPlanIdAsync(userId, studyPlanId);
-            var dtos = new List<StudyTaskDto>();
-            foreach (var entity in entities)
+            try
             {
-                dtos.Add(await MapToDtoWithDetails(entity));
+                var entities = await _repository.GetByStudyPlanIdAsync(userId, studyPlanId);
+                var dtos = new List<StudyTaskDto>();
+                foreach (var entity in entities)
+                {
+                    dtos.Add(await MapToDtoWithDetails(entity));
+                }
+                return dtos;
             }
-            return dtos;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetByStudyPlanIdAsync: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<StudyTaskDto>> GetByPlanCourseIdAsync(Guid userId, int planCourseId)
+        {
+            try
+            {
+                var entities = await _repository.GetByPlanCourseIdAsync(userId, planCourseId);
+                var dtos = new List<StudyTaskDto>();
+                foreach (var entity in entities)
+                {
+                    dtos.Add(await MapToDtoWithDetails(entity));
+                }
+                return dtos;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetByPlanCourseIdAsync: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<IEnumerable<StudyTaskDto>> GetTodayAsync(Guid userId)
         {
-            var entities = await _repository.GetByDateAsync(userId, DateTime.Today);
-            var dtos = new List<StudyTaskDto>();
-            foreach (var entity in entities)
+            try
             {
-                dtos.Add(await MapToDtoWithDetails(entity));
+                return await GetByDateAsync(userId, DateTime.Today);
             }
-            return dtos;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetTodayAsync: {ex.Message}");
+                throw;
+            }
         }
 
-        // Mapping helpers
-        private StudyTask MapToEntity(StudyTaskDto dto) =>
-            new StudyTask
+        public async Task<IEnumerable<StudyTaskDto>> GetUpcomingAsync(Guid userId, int days = 7)
+        {
+            try
             {
-                Id = dto.Id,
-                PlanCourseId = dto.PlanCourseId,
-                CourseTopicId = dto.CourseTopicId,
-                TaskName = dto.TaskName,
-                TaskDescription = dto.TaskDescription,
-                EstimatedHours = dto.EstimatedHours,
-                DueDate = dto.DueDate,
-                ScheduledDate = dto.ScheduledDate,
-                Status = dto.Status,
-                CompletionDate = dto.CompletionDate,
-                Logs = dto.Logs?.Select(log => new StudyLog
+                var entities = await _repository.GetUpcomingAsync(userId, days);
+                var dtos = new List<StudyTaskDto>();
+                foreach (var entity in entities)
                 {
-                    Id = log.Id,
-                    TaskId = log.TaskId,
-                    ActualTimeSpent = log.ActualTimeSpent,
-                    LogDate = log.LogDate
-                }).ToList(),
-                Resources = dto.Resources?.Select(res => new TaskResource
+                    dtos.Add(await MapToDtoWithDetails(entity));
+                }
+                return dtos;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetUpcomingAsync: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<StudyTaskDto>> GetOverdueAsync(Guid userId)
+        {
+            try
+            {
+                var entities = await _repository.GetOverdueAsync(userId);
+                var dtos = new List<StudyTaskDto>();
+                foreach (var entity in entities)
                 {
-                    Id = res.Id,
-                    TaskId = res.TaskId,
-                    ResourceType = res.ResourceType,
-                    ResourceURL = res.ResourceURL
-                }).ToList()
-            };
+                    dtos.Add(await MapToDtoWithDetails(entity));
+                }
+                return dtos;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetOverdueAsync: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<StudyTaskDto>> GetByStatusAsync(Guid userId, string status)
+        {
+            try
+            {
+                var entities = await _repository.GetByStatusAsync(userId, status);
+                var dtos = new List<StudyTaskDto>();
+                foreach (var entity in entities)
+                {
+                    dtos.Add(await MapToDtoWithDetails(entity));
+                }
+                return dtos;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetByStatusAsync: {ex.Message}");
+                throw;
+            }
+        }
     }
 }

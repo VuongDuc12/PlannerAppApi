@@ -7,6 +7,7 @@ namespace Ucm.Domain.Entities
     {
         public int Id { get; set; }
         public int StudyPlanId { get; set; }
+        public StudyPlan StudyPlan { get; set; }
         public int CourseId { get; set; }
         public Guid UserId { get; set; }
         

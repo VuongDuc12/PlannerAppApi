@@ -12,6 +12,7 @@ import TopicsPage from '../pages/admin/TopicsPage';
 import PlanTemplatesPage from '../pages/admin/PlanTemplatesPage';
 import StudyPlanAdminPage from '../pages/admin/StudyPlanAdminPage';
 import StudyPlanListPage from '../pages/admin/StudyPlanListPage';
+import StudyPlanDetailPage from '../pages/admin/StudyPlanDetailPage';
 import StudyPlanTasksPage from '../pages/admin/StudyPlanTasksPage';
 import StudyPlanCoursesPage from '../pages/admin/StudyPlanCoursesPage';
 
@@ -39,6 +40,7 @@ const router = createBrowserRouter([
           { path: 'plan-templates', element: <PlanTemplatesPage /> },
           { path: 'studyplans', element: <StudyPlanAdminPage /> },
           { path: 'studyplans/:userId', element: <StudyPlanListPage /> },
+          { path: 'studyplans/:planId/detail', element: <StudyPlanDetailPage /> },
           { path: 'studyplans/:planId/tasks', element: <StudyPlanTasksPage /> },
           { path: 'studyplans/:planId/courses', element: <StudyPlanCoursesPage /> },
         ]

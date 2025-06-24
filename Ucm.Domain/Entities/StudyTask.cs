@@ -10,7 +10,9 @@ namespace Ucm.Domain.Entities
     {
         public int Id { get; set; }
         public int PlanCourseId { get; set; }
+        public StudyPlanCourse PlanCourse { get; set; }
         public int? CourseTopicId { get; set; }
+        public CourseTopic CourseTopic { get; set; }
         public string TaskName { get; set; }
         public string TaskDescription { get; set; }
         public decimal? EstimatedHours { get; set; }

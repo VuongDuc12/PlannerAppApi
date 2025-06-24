@@ -22,6 +22,7 @@ namespace Ucm.Infrastructure.Repositories
         public async Task<IEnumerable<StudyPlanCourse>> GetByUserIdAsync(Guid userId)
         {
             var efItems = await _context.StudyPlanCourses
+                .Include(spc => spc.Tasks)
                 .Where(spc => spc.UserId == userId)
                 .ToListAsync();
             return efItems.Select(_mapper.ToEntity);
@@ -30,6 +31,7 @@ namespace Ucm.Infrastructure.Repositories
         public async Task<IEnumerable<StudyPlanCourse>> GetByStudyPlanIdAsync(int studyPlanId)
         {
             var efItems = await _context.StudyPlanCourses
+                .Include(spc => spc.Tasks)
                 .Where(spc => spc.StudyPlanId == studyPlanId)
                 .ToListAsync();
             return efItems.Select(_mapper.ToEntity);
@@ -39,6 +41,16 @@ namespace Ucm.Infrastructure.Repositories
         {
             return await _context.StudyPlanCourses
                 .CountAsync(spc => spc.StudyPlanId == studyPlanId);
+        }
+
+        public async Task<StudyPlanCourse> GetByIdWithCourseAsync(int id)
+        {
+            var studyPlanCourseEf = await _context.StudyPlanCourses
+                .Include(spc => spc.Course)
+                .Include(spc => spc.Tasks)
+                .FirstOrDefaultAsync(spc => spc.Id == id);
+
+            return studyPlanCourseEf != null ? _mapper.ToEntity(studyPlanCourseEf) : null;
         }
     }
 }

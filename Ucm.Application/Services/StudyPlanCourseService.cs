@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ucm.Application.Dtos;
+using Ucm.Application.DTOs.Course;
 using Ucm.Application.IServices;
 using Ucm.Domain.Entities;
 using Ucm.Domain.IRepositories;
@@ -13,12 +14,14 @@ namespace Ucm.Application.Services
         private readonly IStudyPlanCourseRepository _repository;
         private readonly IStudyPlanService _studyPlanService;
         private readonly IStudyPlanRepository _studyPlanRepository;
+        private readonly ICourseRepository _courseRepository;
 
-        public StudyPlanCourseService(IStudyPlanCourseRepository repository, IStudyPlanService studyPlanService, IStudyPlanRepository studyPlanRepository)
+        public StudyPlanCourseService(IStudyPlanCourseRepository repository, IStudyPlanService studyPlanService, IStudyPlanRepository studyPlanRepository, ICourseRepository courseRepository)
         {
             _repository = repository;
             _studyPlanService = studyPlanService;
             _studyPlanRepository = studyPlanRepository;
+            _courseRepository = courseRepository;
         }
 
         public async Task<IEnumerable<StudyPlanCourseDto>> GetAllAsync()
@@ -29,7 +32,7 @@ namespace Ucm.Application.Services
 
         public async Task<StudyPlanCourseDto> GetByIdAsync(int id)
         {
-            var entity = await _repository.GetByIdAsync(id);
+            var entity = await _repository.GetByIdWithCourseAsync(id);
             if (entity == null) throw new System.Exception($"StudyPlanCourse với id {id} không tồn tại.");
             return MapToDto(entity);
         }
@@ -43,7 +46,9 @@ namespace Ucm.Application.Services
             // Cập nhật CourseCount trong StudyPlan
             await UpdateStudyPlanCourseCount(dto.StudyPlanId);
             
-            return MapToDto(entity);
+            // Lấy StudyPlanCourse với Course để trả về
+            var createdEntity = await _repository.GetByIdWithCourseAsync(entity.Id);
+            return MapToDto(createdEntity);
         }
 
         public async Task UpdateAsync(StudyPlanCourseDto dto)
@@ -78,7 +83,14 @@ namespace Ucm.Application.Services
         public async Task<IEnumerable<StudyPlanCourseDto>> GetByStudyPlanIdAsync(int studyPlanId)
         {
             var entities = await _repository.GetByStudyPlanIdAsync(studyPlanId);
-            return entities.Select(MapToDto);
+            // Load Course cho mỗi StudyPlanCourse
+            var result = new List<StudyPlanCourseDto>();
+            foreach (var entity in entities)
+            {
+                var entityWithCourse = await _repository.GetByIdWithCourseAsync(entity.Id);
+                result.Add(MapToDto(entityWithCourse));
+            }
+            return result;
         }
 
         // Helper method để cập nhật CourseCount
@@ -104,7 +116,8 @@ namespace Ucm.Application.Services
                 Id = entity.Id,
                 StudyPlanId = entity.StudyPlanId,
                 CourseId = entity.CourseId,
-                UserId = entity.UserId
+                UserId = entity.UserId,
+                Course = entity.Course != null ? MapToCourseDto(entity.Course) : null
             };
 
         private StudyPlanCourse MapToEntity(StudyPlanCourseDto dto) =>
@@ -114,6 +127,15 @@ namespace Ucm.Application.Services
                 StudyPlanId = dto.StudyPlanId,
                 CourseId = dto.CourseId,
                 UserId = dto.UserId ?? Guid.Empty
+            };
+
+        private CourseDto MapToCourseDto(Course course) =>
+            new CourseDto
+            {
+                Id = course.Id,
+                CourseName = course.CourseName,
+                Credits = course.Credits,
+                Description = course.Description
             };
     }
 }

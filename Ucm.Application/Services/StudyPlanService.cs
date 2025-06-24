@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using Ucm.Application.IServices;
+using Ucm.Application.DTOs.StudyPlan;
 using Ucm.Domain.Entities;
 using Ucm.Domain.IRepositories;
 
@@ -12,11 +13,13 @@ namespace Ucm.Application.Services
     {
         private readonly IStudyPlanRepository _repository;
         private readonly IStudyPlanCourseRepository _studyPlanCourseRepository;
+        private readonly IUserRepository _userRepository;
 
-        public StudyPlanService(IStudyPlanRepository repository, IStudyPlanCourseRepository studyPlanCourseRepository)
+        public StudyPlanService(IStudyPlanRepository repository, IStudyPlanCourseRepository studyPlanCourseRepository, IUserRepository userRepository)
         {
             _repository = repository;
             _studyPlanCourseRepository = studyPlanCourseRepository;
+            _userRepository = userRepository;
         }
 
         public async Task<IEnumerable<StudyPlan>> GetAllAsync()
@@ -117,6 +120,137 @@ namespace Ucm.Application.Services
             System.Diagnostics.Debug.WriteLine($"Service: Update result = {success}");
             
             return success;
+        }
+
+        public async Task<StudyPlanUserSummaryDto> GetUserSummaryAsync(Guid userId)
+        {
+            // Lấy thông tin user
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null) return null;
+
+            // Lấy tất cả study plans của user
+            var plans = await _repository.GetAllByUserIdAsync(userId);
+            
+            // Tính toán CourseCount cho mỗi plan
+            foreach (var plan in plans)
+            {
+                plan.CourseCount = await _studyPlanCourseRepository.CountByStudyPlanIdAsync(plan.Id);
+            }
+
+            // Phân loại plans theo trạng thái
+            var activePlans = plans.Where(p => !p.Completed.HasValue || !p.Completed.Value).ToList();
+            var completedPlans = plans.Where(p => p.Completed.HasValue && p.Completed.Value).ToList();
+            var pendingPlans = plans.Where(p => p.StartDate > DateTime.Now).ToList();
+
+            // Tạo summary DTOs
+            var planSummaries = plans.Select(p => new StudyPlanSummaryDto
+            {
+                Id = p.Id,
+                PlanName = p.PlanName,
+                StartDate = p.StartDate,
+                EndDate = p.EndDate,
+                Semester = p.Semester,
+                AcademicYear = p.AcademicYear,
+                CourseCount = p.CourseCount,
+                Completed = p.Completed,
+                Status = GetPlanStatus(p)
+            }).ToList();
+
+            return new StudyPlanUserSummaryDto
+            {
+                UserId = user.Id,
+                UserName = user.Username,
+                UserEmail = user.Email,
+                TotalPlans = plans.Count(),
+                ActivePlans = activePlans.Count,
+                CompletedPlans = completedPlans.Count,
+                PendingPlans = pendingPlans.Count,
+                Plans = planSummaries
+            };
+        }
+
+        private string GetPlanStatus(StudyPlan plan)
+        {
+            if (plan.Completed.HasValue && plan.Completed.Value)
+                return "Completed";
+            
+            if (plan.StartDate > DateTime.Now)
+                return "Pending";
+            
+            return "Active";
+        }
+
+        public async Task<StudyPlanAdminSummaryDto> GetAdminSummaryAsync()
+        {
+            // Lấy tất cả users
+            var users = await _userRepository.GetAllAsync();
+            var userSummaries = new List<UserPlanSummaryDto>();
+            
+            int totalPlans = 0;
+            int totalActivePlans = 0;
+            int totalCompletedPlans = 0;
+            int totalPendingPlans = 0;
+
+            foreach (var user in users)
+            {
+                // Lấy tất cả study plans của user
+                var plans = await _repository.GetAllByUserIdAsync(user.Id);
+                
+                // Tính toán CourseCount cho mỗi plan
+                foreach (var plan in plans)
+                {
+                    plan.CourseCount = await _studyPlanCourseRepository.CountByStudyPlanIdAsync(plan.Id);
+                }
+
+                // Phân loại plans theo trạng thái
+                var activePlans = plans.Where(p => !p.Completed.HasValue || !p.Completed.Value).ToList();
+                var completedPlans = plans.Where(p => p.Completed.HasValue && p.Completed.Value).ToList();
+                var pendingPlans = plans.Where(p => p.StartDate > DateTime.Now).ToList();
+
+                // Tạo summary DTOs cho plans
+                var planSummaries = plans.Select(p => new StudyPlanSummaryDto
+                {
+                    Id = p.Id,
+                    PlanName = p.PlanName,
+                    StartDate = p.StartDate,
+                    EndDate = p.EndDate,
+                    Semester = p.Semester,
+                    AcademicYear = p.AcademicYear,
+                    CourseCount = p.CourseCount,
+                    Completed = p.Completed,
+                    Status = GetPlanStatus(p)
+                }).ToList();
+
+                var userSummary = new UserPlanSummaryDto
+                {
+                    UserId = user.Id,
+                    UserName = user.Username,
+                    UserEmail = user.Email,
+                    TotalPlans = plans.Count(),
+                    ActivePlans = activePlans.Count,
+                    CompletedPlans = completedPlans.Count,
+                    PendingPlans = pendingPlans.Count,
+                    Plans = planSummaries
+                };
+
+                userSummaries.Add(userSummary);
+
+                // Cộng dồn tổng số
+                totalPlans += plans.Count();
+                totalActivePlans += activePlans.Count;
+                totalCompletedPlans += completedPlans.Count;
+                totalPendingPlans += pendingPlans.Count;
+            }
+
+            return new StudyPlanAdminSummaryDto
+            {
+                TotalUsers = users.Count(),
+                TotalPlans = totalPlans,
+                TotalActivePlans = totalActivePlans,
+                TotalCompletedPlans = totalCompletedPlans,
+                TotalPendingPlans = totalPendingPlans,
+                Users = userSummaries
+            };
         }
     }
 }

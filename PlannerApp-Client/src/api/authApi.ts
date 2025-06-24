@@ -95,6 +95,8 @@ export const deleteCourseTopic = (id: number) => {
 };
 
 export const getUserPlanStats = () => api.get('/StudyPlan/user-stats');
+export const getAllStudyPlans = () => api.get('/StudyPlan');
+export const getStudyPlanAdminSummary = () => api.get('/StudyPlan/admin-summary');
 export const getPlansByUser = (userId: string) => api.get(`/StudyPlan/user/${userId}`);
 export const getStudyPlanById = (planId: number) => api.get(`/StudyPlan/${planId}`);
 export const getCoursesByPlan = (planId: number) =>

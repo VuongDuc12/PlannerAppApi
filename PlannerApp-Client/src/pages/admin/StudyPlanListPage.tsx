@@ -49,8 +49,8 @@ const StudyPlanListPage = () => {
               <div
                 key={plan.id}
                 className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-all cursor-pointer"
-                onClick={() => navigate(`/admin/studyplans/${plan.id}/courses`, { state: { plan } })}
-                title="Xem danh sách môn học đăng ký của kế hoạch này"
+                onClick={() => navigate(`/admin/studyplans/${plan.id}/detail`, { state: { plan } })}
+                title="Xem chi tiết kế hoạch học tập"
               >
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-lg font-bold text-indigo-700">{plan.planName}</h3>
@@ -72,7 +72,7 @@ const StudyPlanListPage = () => {
                   <span className="font-medium">Số môn đăng ký:</span> {plan.courseCount}
                 </div>
                 <div className="mt-2">
-                  <span className="text-blue-600 text-sm underline">Xem môn học</span>
+                  <span className="text-blue-600 text-sm underline">Xem chi tiết</span>
                 </div>
               </div>
             ))

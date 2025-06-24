@@ -24,6 +24,29 @@ namespace Ucm.Application.Dtos
         public List<TaskResourceDto> Resources { get; set; }
     }
 
+    // DTO cho việc tạo task mới
+    public class CreateStudyTaskRequest
+    {
+        public int PlanCourseId { get; set; }
+        public int? CourseTopicId { get; set; } // Có thể null hoặc 0
+        public string TaskName { get; set; }
+        public string TaskDescription { get; set; }
+        public decimal? EstimatedHours { get; set; }
+        public DateTime? DueDate { get; set; }
+        public DateOnly? ScheduledDate { get; set; }
+        public string Status { get; set; } = "ToDo"; // Default status
+    }
 
-   
+    // DTO cho việc cập nhật task
+    public class UpdateStudyTaskRequest
+    {
+        public int? CourseTopicId { get; set; } // Có thể null hoặc 0
+        public string TaskName { get; set; }
+        public string TaskDescription { get; set; }
+        public decimal? EstimatedHours { get; set; }
+        public DateTime? DueDate { get; set; }
+        public DateOnly? ScheduledDate { get; set; }
+        public string Status { get; set; }
+        public DateTime? CompletionDate { get; set; }
+    }
 }

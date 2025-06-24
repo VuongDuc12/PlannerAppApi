@@ -70,6 +70,12 @@ namespace Ucm.Infrastructure.Repositories
             return roles.ToList();
         }
 
+        public async Task<IEnumerable<AppUser>> GetAllAsync()
+        {
+            var entities = _userManager.Users.ToList();
+            return entities.Select(MapToDomain);
+        }
+
         private AppUser MapToDomain(AppUserEF entity)
         {
             return new AppUser

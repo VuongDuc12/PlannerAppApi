@@ -151,5 +151,27 @@ namespace Ucm.API.Controllers
             
             return Ok(Result<StudyPlan>.Ok(result));
         }
+
+        [HttpGet("user-summary")]
+        public async Task<ActionResult<Result<StudyPlanUserSummaryDto>>> GetUserSummary()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized(Result<StudyPlanUserSummaryDto>.Fail("Invalid user token"));
+
+            var result = await _service.GetUserSummaryAsync(userId);
+            if (result == null)
+                return NotFound(Result<StudyPlanUserSummaryDto>.Fail("User not found"));
+
+            return Ok(Result<StudyPlanUserSummaryDto>.Ok(result));
+        }
+
+        [HttpGet("admin-summary")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<Result<StudyPlanAdminSummaryDto>>> GetAdminSummary()
+        {
+            var result = await _service.GetAdminSummaryAsync();
+            return Ok(Result<StudyPlanAdminSummaryDto>.Ok(result));
+        }
     }
 } 

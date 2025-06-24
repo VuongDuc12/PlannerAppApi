@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,8 +18,10 @@ namespace Ucm.Application
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IStudyPlanService, StudyPlanService>();
-
             services.AddScoped<IStudyPlanCourseService, StudyPlanCourseService>();
+            services.AddScoped<IStudyTaskService, StudyTaskService>();
+            services.AddScoped<IStudyLogService, StudyLogService>();
+            services.AddScoped<ITaskResourceService, TaskResourceService>();
 
             services.AddScoped<CourseService>();
             services.AddScoped<CourseTopicService>();

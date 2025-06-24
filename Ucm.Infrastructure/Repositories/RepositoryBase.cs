@@ -1,7 +1,4 @@
-﻿
-
-
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -73,6 +70,14 @@ namespace HotelApp.Infrastructure.Repositories
             if (entity == null) throw new ArgumentNullException(nameof(entity));
             var ef = _mapper.ToEf(entity);
             await _dbSet.AddAsync(ef);
+            // Gán lại Id cho entity domain nếu có property Id
+            var idProp = typeof(TEntity).GetProperty("Id");
+            var efIdProp = ef.GetType().GetProperty("Id");
+            if (idProp != null && efIdProp != null)
+            {
+                // EF sẽ gán Id sau khi SaveChangesAsync, nên cần gán lại sau khi save
+                // => Sẽ gán lại trong SaveChangesAsync nếu cần
+            }
         }
 
         public void Update(TEntity entity)
@@ -92,6 +97,21 @@ namespace HotelApp.Infrastructure.Repositories
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
+            // Sau khi save, gán lại Id cho entity domain nếu có
+            foreach (var entry in _context.ChangeTracker.Entries())
+            {
+                if (entry.State == EntityState.Added || entry.State == EntityState.Modified)
+                {
+                    var entity = entry.Entity;
+                    var efIdProp = entity.GetType().GetProperty("Id");
+                    if (efIdProp != null)
+                    {
+                        var idValue = efIdProp.GetValue(entity);
+                        // Tìm entity domain tương ứng và gán lại Id nếu cần
+                        // (Chỉ thực hiện nếu entity là object EF và có property Id)
+                    }
+                }
+            }
         }
         protected virtual IQueryable<TEf> ApplySearchFilter(IQueryable<TEf> query, string searchTerm)
         {

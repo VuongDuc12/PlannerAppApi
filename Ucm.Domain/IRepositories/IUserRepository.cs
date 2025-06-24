@@ -12,10 +12,9 @@ namespace Ucm.Domain.IRepositories
     {
         Task<AppUser?> GetByUsernameAsync(string username);
         Task<AppUser?> GetByIdAsync(Guid id);
+        Task<IEnumerable<AppUser>> GetAllAsync();
         Task<bool> CheckPasswordAsync(AppUser user, string password);
         Task<Result> CreateAsync(AppUser user, string password, string role);
         Task<List<string>> GetRolesAsync(Guid userId);
-  
     }
-
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Ucm.Domain.Entities;
+using Ucm.Application.DTOs.StudyPlan;
 
 namespace Ucm.Application.IServices
 {
@@ -15,5 +16,7 @@ namespace Ucm.Application.IServices
         Task<bool> UpdateAsync(StudyPlan entity);
         Task<bool> DeleteAsync(int id);
         Task<bool> UpdateCourseCountAsync(int studyPlanId);
+        Task<StudyPlanUserSummaryDto> GetUserSummaryAsync(Guid userId);
+        Task<StudyPlanAdminSummaryDto> GetAdminSummaryAsync();
     }
 }
