@@ -24,6 +24,9 @@ namespace Ucm.Application.Services
         public async Task<CourseTopic> GetByIdAsync(int id)
             => await _repo.GetByIdAsync(id);
 
+        public async Task<IEnumerable<CourseTopic>> GetAllAsync()
+            => await _repo.GetAllAsync();
+
         public async Task AddAsync(CourseTopic topic)
         {
             await _repo.AddAsync(topic);

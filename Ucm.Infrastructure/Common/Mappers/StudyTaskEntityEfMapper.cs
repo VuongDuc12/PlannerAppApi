@@ -2,6 +2,7 @@ using Ucm.Domain.Entities;
 using Ucm.Infrastructure.Data.Models;
 using System.Linq;
 using Ucm.Domain.Enums;
+using System;
 
 namespace Ucm.Infrastructure.Common.Mappers
 {
@@ -11,7 +12,14 @@ namespace Ucm.Infrastructure.Common.Mappers
         {
             if (ef == null) return null;
 
-            return new StudyTask
+            Console.WriteLine($"Mapping StudyTaskEf to StudyTask - Id: {ef.Id}");
+            Console.WriteLine($"EF PlanCourse: {ef.PlanCourse != null}");
+            if (ef.PlanCourse != null)
+            {
+                Console.WriteLine($"EF StudyPlan: {ef.PlanCourse.StudyPlan != null}, Course: {ef.PlanCourse.Course != null}");
+            }
+
+            var result = new StudyTask
             {
                 Id = ef.Id,
                 PlanCourseId = ef.PlanCourseId,
@@ -28,6 +36,15 @@ namespace Ucm.Infrastructure.Common.Mappers
                 Logs = ef.Logs?.Select(MapStudyLog).ToList(),
                 Resources = ef.Resources?.Select(MapTaskResource).ToList()
             };
+
+            Console.WriteLine($"Mapped to StudyTask - Id: {result.Id}");
+            Console.WriteLine($"Domain PlanCourse: {result.PlanCourse != null}");
+            if (result.PlanCourse != null)
+            {
+                Console.WriteLine($"Domain StudyPlan: {result.PlanCourse.StudyPlan != null}, Course: {result.PlanCourse.Course != null}");
+            }
+
+            return result;
         }
 
         public StudyTaskEf ToEf(StudyTask entity)
@@ -56,7 +73,12 @@ namespace Ucm.Infrastructure.Common.Mappers
         // Helper methods to avoid circular dependency
         private StudyPlanCourse MapPlanCourse(StudyPlanCourseEf ef)
         {
-            return new StudyPlanCourse
+            if (ef == null) return null;
+
+            Console.WriteLine($"Mapping StudyPlanCourseEf to StudyPlanCourse - Id: {ef.Id}");
+            Console.WriteLine($"EF StudyPlan: {ef.StudyPlan != null}, Course: {ef.Course != null}");
+
+            var result = new StudyPlanCourse
             {
                 Id = ef.Id,
                 StudyPlanId = ef.StudyPlanId,
@@ -66,6 +88,11 @@ namespace Ucm.Infrastructure.Common.Mappers
                 UserId = ef.UserId,
                 Tasks = null // Avoid circular reference
             };
+
+            Console.WriteLine($"Mapped to StudyPlanCourse - Id: {result.Id}");
+            Console.WriteLine($"Domain StudyPlan: {result.StudyPlan != null}, Course: {result.Course != null}");
+
+            return result;
         }
 
         private StudyPlanCourseEf MapPlanCourseToEf(StudyPlanCourse entity)

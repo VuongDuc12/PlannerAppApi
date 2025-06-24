@@ -13,6 +13,7 @@ namespace Ucm.Application.Dtos
         public int CourseId { get; set; }
         public string CourseName { get; set; }
         public int? CourseTopicId { get; set; }
+        public string? CourseTopicName { get; set; }
         public string TaskName { get; set; }
         public string TaskDescription { get; set; }
         public decimal? EstimatedHours { get; set; }

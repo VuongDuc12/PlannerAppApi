@@ -45,12 +45,24 @@ namespace Ucm.Infrastructure.Repositories
 
         public async Task<StudyPlanCourse> GetByIdWithCourseAsync(int id)
         {
-            var studyPlanCourseEf = await _context.StudyPlanCourses
-                .Include(spc => spc.Course)
-                .Include(spc => spc.Tasks)
-                .FirstOrDefaultAsync(spc => spc.Id == id);
+            var ef = await _context.StudyPlanCourses
+                .Include(x => x.Course)
+                .FirstOrDefaultAsync(x => x.Id == id);
+            return ef == null ? null : _mapper.ToEntity(ef);
+        }
 
-            return studyPlanCourseEf != null ? _mapper.ToEntity(studyPlanCourseEf) : null;
+        public async Task<IEnumerable<StudyPlanCourse>> GetAllByUserIdAsync(Guid userId)
+        {
+            Console.WriteLine($"Getting all plan courses for user: {userId}");
+            var query = _context.StudyPlanCourses
+                .Include(pc => pc.StudyPlan)
+                .Include(pc => pc.Course)
+                .Where(pc => pc.UserId == userId);
+
+            var entities = await query.ToListAsync();
+            Console.WriteLine($"Found {entities.Count} plan courses");
+
+            return entities.Select(_mapper.ToEntity);
         }
     }
 }

@@ -27,7 +27,9 @@ namespace Ucm.API.Controllers
         {
             try
             {
-                var result = await _service.GetAllAsync();
+                var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                Console.WriteLine($"Getting all tasks for user: {userId}");
+                var result = await _service.GetAllAsync(userId);
                 return Ok(Result<IEnumerable<StudyTaskDto>>.Ok(result));
             }
             catch (Exception ex)

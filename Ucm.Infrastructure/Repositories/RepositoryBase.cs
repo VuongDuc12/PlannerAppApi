@@ -68,15 +68,24 @@ namespace HotelApp.Infrastructure.Repositories
         public async Task AddAsync(TEntity entity)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
+            
+            Console.WriteLine($"Converting domain entity to EF entity...");
             var ef = _mapper.ToEf(entity);
+            Console.WriteLine($"Adding EF entity to DbSet...");
             await _dbSet.AddAsync(ef);
-            // Gán lại Id cho entity domain nếu có property Id
+
+            // Lưu ngay để lấy Id
+            await _context.SaveChangesAsync();
+            Console.WriteLine($"Saved changes to get Id. EF entity Id: {ef.GetType().GetProperty("Id")?.GetValue(ef)}");
+
+            // Gán lại Id cho entity domain
             var idProp = typeof(TEntity).GetProperty("Id");
             var efIdProp = ef.GetType().GetProperty("Id");
             if (idProp != null && efIdProp != null)
             {
-                // EF sẽ gán Id sau khi SaveChangesAsync, nên cần gán lại sau khi save
-                // => Sẽ gán lại trong SaveChangesAsync nếu cần
+                var efId = efIdProp.GetValue(ef);
+                idProp.SetValue(entity, efId);
+                Console.WriteLine($"Set domain entity Id to: {efId}");
             }
         }
 
@@ -108,22 +117,9 @@ namespace HotelApp.Infrastructure.Repositories
 
         public async Task SaveChangesAsync()
         {
+            Console.WriteLine("Saving additional changes to database...");
             await _context.SaveChangesAsync();
-            // Sau khi save, gán lại Id cho entity domain nếu có
-            foreach (var entry in _context.ChangeTracker.Entries())
-            {
-                if (entry.State == EntityState.Added || entry.State == EntityState.Modified)
-                {
-                    var entity = entry.Entity;
-                    var efIdProp = entity.GetType().GetProperty("Id");
-                    if (efIdProp != null)
-                    {
-                        var idValue = efIdProp.GetValue(entity);
-                        // Tìm entity domain tương ứng và gán lại Id nếu cần
-                        // (Chỉ thực hiện nếu entity là object EF và có property Id)
-                    }
-                }
-            }
+            Console.WriteLine("Additional changes saved successfully.");
         }
         protected virtual IQueryable<TEf> ApplySearchFilter(IQueryable<TEf> query, string searchTerm)
         {
