@@ -226,7 +226,9 @@ namespace Ucm.Infrastructure.Migrations
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Semester = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AcademicYear = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    WeeklyStudyGoalHours = table.Column<int>(type: "int", nullable: true)
+                    WeeklyStudyGoalHours = table.Column<int>(type: "int", nullable: true),
+                    CourseCount = table.Column<int>(type: "int", nullable: true),
+                    Completed = table.Column<bool>(type: "bit", nullable: true)
                 },
                 constraints: table =>
                 {

@@ -104,18 +104,24 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    
+
     try
     {
-        // Đảm bảo database tồn tại
-        db.Database.EnsureCreated();
-        
-        // Chỉ migrate nếu có migrations chưa apply
-        if (db.Database.GetPendingMigrations().Any())
+        // Kiểm tra xem database có tồn tại không
+        if (!db.Database.CanConnect())
         {
-            db.Database.Migrate();
+            // Nếu không kết nối được, tạo database mới
+            db.Database.EnsureCreated();
         }
-        
+        else
+        {
+            // Nếu đã kết nối được, chỉ migrate nếu có migrations chưa apply
+            if (db.Database.GetPendingMigrations().Any())
+            {
+                db.Database.Migrate();
+            }
+        }
+
         await IdentitySeeder.SeedRolesAsync(scope.ServiceProvider);
         await IdentitySeeder.SeedAdminAsync(scope.ServiceProvider);
     }
