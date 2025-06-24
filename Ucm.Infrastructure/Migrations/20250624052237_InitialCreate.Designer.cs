@@ -12,7 +12,7 @@ using Ucm.Infrastructure.Data;
 namespace Ucm.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250622170053_InitialCreate")]
+    [Migration("20250624052237_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -380,6 +380,12 @@ namespace Ucm.Infrastructure.Migrations
                     b.Property<string>("AcademicYear")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool?>("Completed")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("CourseCount")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
