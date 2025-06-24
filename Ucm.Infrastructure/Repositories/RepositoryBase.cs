@@ -90,7 +90,19 @@ namespace HotelApp.Infrastructure.Repositories
         public void Delete(TEntity entity)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
-            var ef = _mapper.ToEf(entity);
+            // Lấy Id từ entity domain
+            var idProp = typeof(TEntity).GetProperty("Id");
+            if (idProp == null) throw new InvalidOperationException("Entity must have Id property");
+            var id = idProp.GetValue(entity);
+
+            // Tìm instance EF đang được tracking hoặc trong database
+            var ef = _dbSet.Find(id);
+            if (ef == null)
+            {
+                // Nếu chưa được tracking, map sang EF và attach vào context
+                ef = _mapper.ToEf(entity);
+                _dbSet.Attach(ef);
+            }
             _dbSet.Remove(ef);
         }
 

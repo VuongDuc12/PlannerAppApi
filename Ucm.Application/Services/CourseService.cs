@@ -37,4 +37,7 @@ public class CourseService
         _repo.Delete(existing);
         await _repo.SaveChangesAsync();
     }
+
+    public async Task<IEnumerable<Course>> GetAllAsync()
+        => await _repo.GetAllAsync();
 }

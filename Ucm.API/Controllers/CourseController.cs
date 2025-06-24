@@ -20,7 +20,12 @@ namespace Ucm.API.Controllers
         {
             _service = service;
         }
-
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var courses = await _service.GetAllAsync();
+            return Ok(courses);
+        }
         [HttpGet("paged")]
         public async Task<IActionResult> GetPaged([FromQuery] PaginationParams pagination)
             => Ok(await _service.GetPagedAsync(pagination));
@@ -66,6 +71,8 @@ namespace Ucm.API.Controllers
             await _service.DeleteAsync(id);
             return NoContent();
         }
+
+       
     }
 
 }

@@ -39,14 +39,15 @@ namespace Ucm.Application.Services
 
         public async Task<StudyPlanCourseDto> AddAsync(StudyPlanCourseDto dto)
         {
-            var entity = MapToEntity(dto);
+            var entity = new StudyPlanCourse
+            {
+                StudyPlanId = dto.StudyPlanId,
+                CourseId = dto.CourseId,
+                UserId = dto.UserId ?? Guid.Empty
+            };
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();
-            
-            // Cập nhật CourseCount trong StudyPlan
             await UpdateStudyPlanCourseCount(dto.StudyPlanId);
-            
-            // Lấy StudyPlanCourse với Course để trả về
             var createdEntity = await _repository.GetByIdWithCourseAsync(entity.Id);
             return MapToDto(createdEntity);
         }
@@ -110,8 +111,10 @@ namespace Ucm.Application.Services
         }
 
         // Mapping helpers
-        private StudyPlanCourseDto MapToDto(StudyPlanCourse entity) =>
-            new StudyPlanCourseDto
+        private StudyPlanCourseDto MapToDto(StudyPlanCourse entity)
+        {
+            if (entity == null) return null;
+            return new StudyPlanCourseDto
             {
                 Id = entity.Id,
                 StudyPlanId = entity.StudyPlanId,
@@ -119,6 +122,7 @@ namespace Ucm.Application.Services
                 UserId = entity.UserId,
                 Course = entity.Course != null ? MapToCourseDto(entity.Course) : null
             };
+        }
 
         private StudyPlanCourse MapToEntity(StudyPlanCourseDto dto) =>
             new StudyPlanCourse
