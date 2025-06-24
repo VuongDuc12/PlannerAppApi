@@ -37,19 +37,24 @@ namespace Ucm.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Result<StudyPlanCourseDto>>> Create([FromBody] StudyPlanCourseDto dto)
+        public async Task<ActionResult<Result<StudyPlanCourseDto>>> Create([FromBody] StudyPlanCourseCreateRequest request)
         {
-            if (dto == null)
+            if (request == null)
                 return BadRequest(Result<StudyPlanCourseDto>.Fail("Invalid data"));
 
-            // Lấy userId từ token
+            // Lấy userId từ token và map sang DTO
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!Guid.TryParse(userIdStr, out var userId))
                 return Unauthorized();
-            dto.UserId = userId;
+            var dto = new StudyPlanCourseDto
+            {
+                StudyPlanId = request.StudyPlanId,
+                CourseId = request.CourseId,
+                UserId = userId
+            };
 
             var created = await _service.AddAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, Result<StudyPlanCourseDto>.Ok(created));
+            return Ok(Result<StudyPlanCourseDto>.Ok(dto));
         }
 
         [HttpPut("{id}")]

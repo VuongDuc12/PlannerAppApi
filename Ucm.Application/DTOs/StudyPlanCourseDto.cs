@@ -11,4 +11,11 @@ namespace Ucm.Application.Dtos
         public CourseDto Course { get; set; }
         // Add Task DTOs if needed
     }
+
+    // Request dùng cho tạo mới
+    public class StudyPlanCourseCreateRequest
+    {
+        public int StudyPlanId { get; set; }
+        public int CourseId { get; set; }
+    }
 }
