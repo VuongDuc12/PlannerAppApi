@@ -52,6 +52,7 @@ namespace Ucm.Application.Services
                     CourseId = task.PlanCourse?.Course?.Id ?? 0,
                     CourseName = task.PlanCourse?.Course?.CourseName ?? "Unknown",
                     CourseTopicId = task.CourseTopicId,
+                    CourseTopicName = task.CourseTopic?.TopicName,
                     TaskName = task.TaskName ?? "",
                     TaskDescription = task.TaskDescription ?? "",
                     EstimatedHours = task.EstimatedHours,
@@ -83,11 +84,14 @@ namespace Ucm.Application.Services
             }
         }
 
-        public async Task<IEnumerable<StudyTaskDto>> GetAllAsync()
+        public async Task<IEnumerable<StudyTaskDto>> GetAllAsync(Guid userId)
         {
             try
             {
-                var entities = await _repository.GetAllAsync();
+                Console.WriteLine($"Service: Getting all tasks for user: {userId}");
+                var entities = await _repository.GetAllByUserIdAsync(userId);
+                Console.WriteLine($"Service: Found {entities.Count()} tasks for user.");
+
                 var dtos = new List<StudyTaskDto>();
                 foreach (var entity in entities)
                 {
@@ -129,8 +133,17 @@ namespace Ucm.Application.Services
                 var planCourse = await _studyPlanCourseRepository.GetByIdAsync(request.PlanCourseId);
                 Console.WriteLine($"PlanCourse found: {planCourse != null}");
                 
+                if (planCourse != null)
+                {
+                    Console.WriteLine($"PlanCourse details - Id: {planCourse.Id}, StudyPlanId: {planCourse.StudyPlanId}, CourseId: {planCourse.CourseId}");
+                }
+                
                 if (planCourse == null)
                     throw new ArgumentException("Invalid PlanCourseId - PlanCourse not found");
+
+                // Validate PlanCourse has valid StudyPlanId and CourseId
+                if (planCourse.StudyPlanId <= 0 || planCourse.CourseId <= 0)
+                    throw new ArgumentException("Invalid PlanCourse - StudyPlanId or CourseId is invalid");
 
                 // Validate CourseTopicId if provided
                 int? courseTopicId = null;
@@ -148,33 +161,27 @@ namespace Ucm.Application.Services
                 var entity = new StudyTask
                 {
                     PlanCourseId = request.PlanCourseId,
-                    CourseTopicId = courseTopicId, // Use validated courseTopicId
+                    CourseTopicId = request.CourseTopicId,
                     TaskName = request.TaskName,
                     TaskDescription = request.TaskDescription,
                     EstimatedHours = request.EstimatedHours,
                     DueDate = request.DueDate,
                     ScheduledDate = request.ScheduledDate,
-                    Status = request.Status ?? "ToDo" // Default status
+                    Status = request.Status
                 };
 
-                Console.WriteLine($"Creating entity with PlanCourseId: {entity.PlanCourseId}");
-                await _repository.AddAsync(entity);
-                Console.WriteLine($"Entity added, saving changes...");
-                await _repository.SaveChangesAsync();
-                Console.WriteLine($"Changes saved, getting created entity by unique fields...");
+                Console.WriteLine($"Creating task with PlanCourseId: {entity.PlanCourseId}");
+                await _repository.AddAsync(entity);  // This will also save changes and set the Id
+                Console.WriteLine($"Task created and saved with Id: {entity.Id}");
 
-                // Lấy lại task vừa tạo bằng các trường duy nhất
-                var createdEntity = (await _repository.GetByDateAsync(
-                    planCourse.UserId,
-                    request.ScheduledDate.HasValue ? request.ScheduledDate.Value.ToDateTime(TimeOnly.MinValue) : DateTime.Today
-                )).LastOrDefault(x =>
-                    x.PlanCourseId == request.PlanCourseId &&
-                    x.TaskName == request.TaskName &&
-                    x.DueDate == request.DueDate
-                );
+                // Lấy lại task với đầy đủ related data
+                var createdEntity = await _repository.GetByIdAsync(entity.Id);
+                Console.WriteLine($"Loaded created task: {createdEntity != null}, Id: {createdEntity?.Id}");
 
                 if (createdEntity == null)
-                    throw new Exception("Task was saved but could not be loaded from DB (query fallback).");
+                {
+                    throw new Exception($"Task was saved with Id {entity.Id} but could not be loaded from DB");
+                }
 
                 return await MapToDtoWithDetails(createdEntity);
             }

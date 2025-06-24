@@ -7,7 +7,7 @@ namespace Ucm.Application.IServices
 {
     public interface IStudyTaskService
     {
-        Task<IEnumerable<StudyTaskDto>> GetAllAsync();
+        Task<IEnumerable<StudyTaskDto>> GetAllAsync(Guid userId);
         Task<StudyTaskDto> GetByIdAsync(int id);
         Task<StudyTaskDto> AddAsync(CreateStudyTaskRequest request);
         Task UpdateAsync(int id, UpdateStudyTaskRequest request);

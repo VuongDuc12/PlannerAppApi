@@ -16,5 +16,6 @@ namespace Ucm.Domain.IRepositories
         Task<IEnumerable<StudyTask>> GetUpcomingAsync(Guid userId, int days = 7);
         Task<IEnumerable<StudyTask>> GetOverdueAsync(Guid userId);
         Task<IEnumerable<StudyTask>> GetByStatusAsync(Guid userId, string status);
+        Task<IEnumerable<StudyTask>> GetAllByUserIdAsync(Guid userId);
     }
 }

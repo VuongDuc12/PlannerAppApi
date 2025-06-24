@@ -20,6 +20,13 @@ namespace Ucm.API.Controllers
             _service = service;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var topics = await _service.GetAllAsync();
+            return Ok(Result<IEnumerable<CourseTopic>>.Ok(topics));
+        }
+
         [HttpGet("paged")]
         public async Task<IActionResult> GetPaged([FromQuery] PaginationParams pagination)
         {
